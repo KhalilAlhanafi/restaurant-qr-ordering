@@ -1,5 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ItemController;
+use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\ReservationController;
+use App\Http\Controllers\Admin\TableController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\QRController;
 use Illuminate\Support\Facades\Route;
@@ -17,8 +24,46 @@ Route::get('/menu', [MenuController::class, 'index'])
     ->middleware('identify.table')
     ->name('menu.index');
 
-// Admin QR Code Generation
-Route::get('/admin/qr-codes', [QRController::class, 'generateAll'])
-    ->name('admin.qr-codes');
-Route::get('/admin/qr-code-image/{token}', [QRController::class, 'generateQrImage'])
-    ->name('admin.qr-code-image');
+// Checkout Routes (requires table identification)
+Route::get('/checkout', [CheckoutController::class, 'index'])
+    ->middleware('identify.table')
+    ->name('checkout.index');
+Route::post('/checkout', [CheckoutController::class, 'store'])
+    ->middleware('identify.table')
+    ->name('checkout.store');
+Route::get('/order-confirmation/{order}', [CheckoutController::class, 'confirmation'])
+    ->middleware('identify.table')
+    ->name('order.confirmation');
+
+// Admin Routes
+Route::prefix('admin')->name('admin.')->group(function () {
+    // Dashboard
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Categories CRUD
+    Route::resource('categories', CategoryController::class)->except(['show']);
+    
+    // Items CRUD
+    Route::resource('items', ItemController::class)->except(['show']);
+    
+    // Tables CRUD
+    Route::resource('tables', TableController::class)->except(['show']);
+    
+    // Reservations
+    Route::get('/reservations', [ReservationController::class, 'index'])->name('reservations.index');
+    Route::get('/reservations/create', [ReservationController::class, 'create'])->name('reservations.create');
+    Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');
+    Route::get('/reservations/{reservation}/edit', [ReservationController::class, 'edit'])->name('reservations.edit');
+    Route::put('/reservations/{reservation}', [ReservationController::class, 'update'])->name('reservations.update');
+    Route::delete('/reservations/{reservation}', [ReservationController::class, 'destroy'])->name('reservations.destroy');
+    Route::get('/reservations/timeline', [ReservationController::class, 'timeline'])->name('reservations.timeline');
+    
+    // Orders
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
+    
+    // QR Codes
+    Route::get('/qr-codes', [QRController::class, 'generateAll'])->name('qr-codes');
+    Route::get('/qr-code-image/{token}', [QRController::class, 'generateQrImage'])->name('qr-code-image');
+});

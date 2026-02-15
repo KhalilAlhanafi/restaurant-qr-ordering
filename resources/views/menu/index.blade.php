@@ -201,11 +201,15 @@
                             <div class="item-name">{{ $item->name }}</div>
                             <div class="item-description">{{ $item->description }}</div>
                             <div class="item-meta">
-                                <span class="item-price">${{ number_format($item->price, 2) }}</span>
+                                @if($item->show_price)
+                                    <span class="item-price">${{ number_format($item->price, 2) }}</span>
+                                @else
+                                    <span class="item-price">Price on request</span>
+                                @endif
                                 <span class="item-time">⏱️ {{ $item->preparation_time }} min</span>
                             </div>
                         </div>
-                        <button class="add-btn" onclick="addToCart({{ $item->id }}, @json($item->name), {{ $item->price }})">Add</button>
+                        <button class="add-btn" data-item-id="{{ $item->id }}" data-item-name="{{ $item->name }}" data-item-price="{{ $item->price }}" data-item-show-price="{{ $item->show_price ? 1 : 0 }}">Add</button>
                     </div>
                 @empty
                     <p>No items available in this category.</p>
@@ -225,16 +229,27 @@
     <script>
         let cart = [];
 
+        // Add click handlers to all Add buttons
+        document.querySelectorAll('.add-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.dataset.itemId;
+                const name = this.dataset.itemName;
+                const price = parseFloat(this.dataset.itemPrice);
+                const showPrice = this.dataset.itemShowPrice === '1';
+                addToCart(id, name, price, showPrice);
+            });
+        });
+
         function scrollToCategory(id) {
             document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
         }
 
-        function addToCart(id, name, price) {
+        function addToCart(id, name, price, showPrice) {
             const existingItem = cart.find(item => item.id === id);
             if (existingItem) {
                 existingItem.quantity++;
             } else {
-                cart.push({ id, name, price, quantity: 1 });
+                cart.push({ id, name, price, quantity: 1, showPrice });
             }
             updateCartDisplay();
         }
@@ -247,7 +262,10 @@
             if (cart.length > 0) {
                 cartBar.style.display = 'flex';
                 const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-                const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                // Only count items with showPrice=true in total
+                const totalPrice = cart.reduce((sum, item) => {
+                    return item.showPrice ? sum + (item.price * item.quantity) : sum;
+                }, 0);
                 cartCount.textContent = totalItems;
                 cartTotal.textContent = totalPrice.toFixed(2);
             } else {
