@@ -44,11 +44,21 @@
                 </label>
             </div>
             
-            <div class="flex items-center space-x-4">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded">
-                    Update Category
-                </button>
-                <a href="{{ route('admin.categories.index') }}" class="text-gray-600 hover:text-gray-800">Cancel</a>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded">
+                        Update Category
+                    </button>
+                    <a href="{{ route('admin.categories.index') }}" class="text-gray-600 hover:text-gray-800">Cancel</a>
+                </div>
+                
+                <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded" onclick="return confirm('Are you sure you want to delete this category? This will also delete all items in this category.')">
+                        Delete Category
+                    </button>
+                </form>
             </div>
         </form>
     </div>

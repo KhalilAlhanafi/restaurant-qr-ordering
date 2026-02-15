@@ -30,6 +30,11 @@ class IdentifyTable
 
         // If no token provided, check if table_id exists in session
         if (!session('table_id') && !$request->is('api/*')) {
+            // For AJAX requests, return JSON error instead of redirect
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['error' => 'Session expired. Please scan QR code again.'], 401);
+            }
+            
             // Redirect to error page or show QR scanning required message
             if ($request->route() && $request->route()->getName() !== 'qr.required') {
                 return redirect()->route('qr.required');

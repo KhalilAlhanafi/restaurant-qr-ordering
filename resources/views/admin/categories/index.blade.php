@@ -10,50 +10,20 @@
         </a>
     </div>
 
-    <div class="bg-white shadow rounded-lg overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items Count</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sort Order</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($categories as $category)
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium text-gray-900">{{ $category->name }}</div>
-                            <div class="text-sm text-gray-500">{{ $category->description }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $category->items_count }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $category->sort_order }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $category->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                {{ $category->is_active ? 'Active' : 'Inactive' }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="{{ route('admin.categories.edit', $category) }}" class="text-blue-600 hover:text-blue-900 mr-3">Edit</a>
-                            <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure?')">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">No categories found</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        @forelse($categories as $category)
+            <a href="{{ route('admin.categories.show', $category) }}" class="bg-white rounded-xl shadow hover:shadow-lg transition-all duration-300 border-2 border-gray-100 hover:border-blue-400 p-8 text-center group">
+                <div class="text-5xl mb-4">🍽️</div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2 group-hover:text-blue-600">{{ $category->name }}</h3>
+                <p class="text-sm text-gray-500 mb-3">{{ $category->items_count }} items</p>
+                <span class="px-3 py-1 text-xs rounded-full {{ $category->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                    {{ $category->is_active ? 'Active' : 'Inactive' }}
+                </span>
+            </a>
+        @empty
+            <div class="col-span-full text-center py-12 text-gray-500">
+                No categories found. Create your first category to get started.
+            </div>
+        @endforelse
     </div>
 @endsection

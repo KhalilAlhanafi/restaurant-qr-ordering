@@ -34,6 +34,9 @@ Route::post('/checkout', [CheckoutController::class, 'store'])
 Route::get('/order-confirmation/{order}', [CheckoutController::class, 'confirmation'])
     ->middleware('identify.table')
     ->name('order.confirmation');
+Route::post('/checkout-finalize', [CheckoutController::class, 'checkout'])
+    ->middleware('identify.table')
+    ->name('checkout.finalize');
 
 // Admin Routes
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -41,7 +44,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
     // Categories CRUD
-    Route::resource('categories', CategoryController::class)->except(['show']);
+    Route::resource('categories', CategoryController::class);
     
     // Items CRUD
     Route::resource('items', ItemController::class)->except(['show']);
@@ -60,7 +63,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
     
     // Orders
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/recent', [OrderController::class, 'recent'])->name('orders.recent');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::get('/orders/{order}/data', [OrderController::class, 'getOrderData'])->name('orders.data');
+    Route::post('/orders/{order}/mark-seen', [OrderController::class, 'markAsSeen'])->name('orders.mark-seen');
+    Route::post('/orders/{order}/items/{item}/mark-seen', [OrderController::class, 'markItemAsSeen'])->name('orders.mark-item-seen');
+    Route::post('/orders/{order}/end-service', [OrderController::class, 'endService'])->name('orders.end-service');
+    Route::get('/orders/{order}/add-items', [OrderController::class, 'addItems'])->name('orders.add-items');
+    Route::post('/orders/{order}/add-items', [OrderController::class, 'storeItems'])->name('orders.store-items');
     Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
     
     // QR Codes

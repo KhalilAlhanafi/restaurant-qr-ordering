@@ -8,21 +8,34 @@
         <form action="{{ route('admin.items.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             
-            <div class="mb-4">
-                <label for="category_id" class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                <select name="category_id" id="category_id" required
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">Select Category</option>
-                    @foreach($categories as $category)
-                        <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
-                            {{ $category->name }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('category_id')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </div>
+            @if($preSelectedCategory)
+                @php
+                    $selectedCategory = $categories->firstWhere('id', $preSelectedCategory);
+                @endphp
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                    <div class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-700">
+                        {{ $selectedCategory ? $selectedCategory->name : 'Unknown Category' }}
+                    </div>
+                    <input type="hidden" name="category_id" value="{{ $preSelectedCategory }}">
+                </div>
+            @else
+                <div class="mb-4">
+                    <label for="category_id" class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                    <select name="category_id" id="category_id" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Select Category</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('category_id')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            @endif
             
             <div class="mb-4">
                 <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Name *</label>
@@ -44,9 +57,10 @@
             
             <div class="grid grid-cols-2 gap-4">
                 <div class="mb-4">
-                    <label for="price" class="block text-sm font-medium text-gray-700 mb-2">Price *</label>
-                    <input type="number" name="price" id="price" value="{{ old('price') }}" step="0.01" min="0" required
+                    <label for="price" class="block text-sm font-medium text-gray-700 mb-2">Price</label>
+                    <input type="number" name="price" id="price" value="{{ old('price') }}" step="0.01" min="0"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-gray-500 mt-1">Leave empty if price varies or not applicable</p>
                     @error('price')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror

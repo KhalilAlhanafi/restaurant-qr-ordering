@@ -16,10 +16,11 @@ class ItemController extends Controller
         return view('admin.items.index', compact('items'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $categories = ItemCategory::where('is_active', true)->get();
-        return view('admin.items.create', compact('categories'));
+        $preSelectedCategory = $request->query('category_id');
+        return view('admin.items.create', compact('categories', 'preSelectedCategory'));
     }
 
     public function store(Request $request)
@@ -28,7 +29,7 @@ class ItemController extends Controller
             'category_id' => 'required|exists:item_categories,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
+            'price' => 'nullable|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'preparation_time' => 'integer|min:1',
             'is_available' => 'boolean',
@@ -58,7 +59,7 @@ class ItemController extends Controller
             'category_id' => 'required|exists:item_categories,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
+            'price' => 'nullable|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'preparation_time' => 'integer|min:1',
             'is_available' => 'boolean',

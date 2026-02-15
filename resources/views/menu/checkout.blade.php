@@ -331,13 +331,15 @@
             btn.textContent = 'Placing Order...';
 
             const specialRequests = document.getElementById('special-requests').value;
+            const csrfToken = document.getElementById('page-data').dataset.csrf;
 
             try {
                 const response = await fetch('/checkout', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.getElementById('page-data').dataset.csrf
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({
                         items: cart,
@@ -345,19 +347,28 @@
                     })
                 });
 
-                if (response.ok) {
-                    const data = await response.json();
+                let data;
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    // If not JSON, get text
+                    const text = await response.text();
+                    console.error('Non-JSON response:', text);
+                    throw new Error('Invalid response from server');
+                }
+
+                if (response.ok && data.success) {
                     sessionStorage.removeItem('cart');
-                    window.location.href = '/order-confirmation/' + data.order_id;
+                    window.location.href = data.redirect || ('/order-confirmation/' + data.order_id);
                 } else {
-                    const error = await response.text();
-                    alert('Error placing order. Please try again.');
+                    console.error('Server error:', data);
+                    alert('Error: ' + (data.error || data.message || 'Please try again.'));
                     btn.disabled = false;
                     btn.textContent = 'Place Order';
                 }
             } catch (err) {
-                console.error(err);
-                alert('Error placing order. Please try again.');
+                console.error('Fetch error:', err);
+                alert('Error placing order: ' + err.message);
                 btn.disabled = false;
                 btn.textContent = 'Place Order';
             }

@@ -63,41 +63,96 @@ class CheckoutController extends Controller
         $kitchenLoadDelay = min($activeOrders * 5, 30);
         $estimatedMinutes = $totalPrepTime + $kitchenLoadDelay;
 
-        // Create order
-        $order = Order::create([
-            'table_id' => $tableId,
-            'total_amount' => $totalAmount,
-            'status' => 'pending',
-            'special_requests' => $validated['special_requests'] ?? null,
-            'estimated_minutes' => $estimatedMinutes,
-        ]);
+        // Check for existing active order for this table
+        $existingOrder = Order::activeForTable($tableId)->first();
 
-        // Create order items
-        foreach ($validated['items'] as $itemData) {
-            $item = Item::find($itemData['id']);
-            OrderItem::create([
-                'order_id' => $order->id,
-                'item_id' => $itemData['id'],
-                'quantity' => $itemData['quantity'],
-                'unit_price' => $item->show_price ? $item->price : 0,
-                'special_instructions' => $itemData['notes'] ?? null,
+        if ($existingOrder) {
+            // Add items to existing order
+            foreach ($validated['items'] as $itemData) {
+                $item = Item::find($itemData['id']);
+                $unitPrice = $item->show_price ? ($item->price ?? 0) : 0;
+                $quantity = $itemData['quantity'] ?? 1;
+                $subtotal = $unitPrice * $quantity;
+                
+                OrderItem::create([
+                    'order_id' => $existingOrder->id,
+                    'item_id' => $itemData['id'],
+                    'quantity' => $quantity,
+                    'unit_price' => $unitPrice,
+                    'subtotal' => $subtotal,
+                    'special_instructions' => $itemData['notes'] ?? null,
+                ]);
+            }
+
+            // Update order totals
+            $existingOrder->total_amount += $totalAmount;
+            if ($validated['special_requests'] ?? null) {
+                $existingOrder->special_requests = ($existingOrder->special_requests ? $existingOrder->special_requests . '; ' : '') . $validated['special_requests'];
+            }
+            $existingOrder->estimated_minutes = max($existingOrder->estimated_minutes, $estimatedMinutes);
+            $existingOrder->save();
+
+            $order = $existingOrder;
+        } else {
+            // Create new order
+            $order = Order::create([
+                'table_id' => $tableId,
+                'total_amount' => $totalAmount,
+                'status' => 'pending',
+                'special_requests' => $validated['special_requests'] ?? null,
+                'estimated_minutes' => $estimatedMinutes,
+                'is_checked_out' => false,
             ]);
+
+            // Create order items
+            foreach ($validated['items'] as $itemData) {
+                $item = Item::find($itemData['id']);
+                $unitPrice = $item->show_price ? ($item->price ?? 0) : 0;
+                $quantity = $itemData['quantity'] ?? 1;
+                $subtotal = $unitPrice * $quantity;
+                
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'item_id' => $itemData['id'],
+                    'quantity' => $quantity,
+                    'unit_price' => $unitPrice,
+                    'subtotal' => $subtotal,
+                    'special_instructions' => $itemData['notes'] ?? null,
+                ]);
+            }
         }
 
         // Clear cart from session
         session()->forget('cart');
 
-        // Return JSON for AJAX requests, redirect for regular requests
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'order_id' => $order->id,
-                'redirect' => route('order.confirmation', $order)
-            ]);
+        // Always return JSON since request comes from JavaScript fetch
+        return response()->json([
+            'success' => true,
+            'order_id' => $order->id,
+            'is_existing' => isset($existingOrder),
+            'redirect' => route('order.confirmation', $order)
+        ]);
+    }
+
+    public function checkout(Request $request)
+    {
+        $tableId = session('table_id');
+
+        if (!$tableId) {
+            return redirect()->route('qr.required');
         }
 
-        return redirect()->route('order.confirmation', $order)
-            ->with('success', 'Order placed successfully!');
+        // Find the active order for this table and mark as checked out
+        $order = Order::activeForTable($tableId)->first();
+
+        if ($order) {
+            $order->update(['is_checked_out' => true]);
+            return redirect()->route('order.confirmation', $order)
+                ->with('success', 'Order finalized! Thank you for dining with us.');
+        }
+
+        return redirect()->route('menu.index')
+            ->with('error', 'No active order found to checkout.');
     }
 
     public function confirmation(Order $order)

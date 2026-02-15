@@ -196,7 +196,11 @@
                 <h2 class="category-title">{{ $category->name }}</h2>
                 @forelse($category->items as $item)
                     <div class="menu-item" data-item-id="{{ $item->id }}">
-                        <div class="item-image">🍽️</div>
+                        @if($item->image)
+                            <img src="{{ Storage::url($item->image) }}" alt="{{ $item->name }}" class="item-image" style="object-fit: cover;">
+                        @else
+                            <div class="item-image">🍽️</div>
+                        @endif
                         <div class="item-details">
                             <div class="item-name">{{ $item->name }}</div>
                             <div class="item-description">{{ $item->description }}</div>

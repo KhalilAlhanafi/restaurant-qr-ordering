@@ -168,17 +168,53 @@
             background: #007bff;
             color: white;
         }
-        .btn-secondary {
-            background: #6c757d;
+        .btn-success {
+            background: #28a745;
             color: white;
+        }
+        .btn-success:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .checkout-box {
+            background: #d4edda;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .checkout-text {
+            font-size: 14px;
+            color: #155724;
+            margin-bottom: 15px;
+        }
+        .checked-out-badge {
+            background: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            display: inline-block;
         }
     </style>
 </head>
 <body>
     <div class="success-header">
         <div class="success-icon">✓</div>
-        <div class="success-title">Order Placed Successfully!</div>
-        <div class="success-message">Your order has been sent to the kitchen</div>
+        <div class="success-title">
+            @if($order->is_checked_out)
+                Order Completed!
+            @else
+                Order Placed Successfully!
+            @endif
+        </div>
+        <div class="success-message">
+            @if($order->is_checked_out)
+                Thank you for dining with us
+            @else
+                Your order has been sent to the kitchen. You can add more items or checkout when ready.
+            @endif
+        </div>
     </div>
 
     <div class="container">
@@ -188,7 +224,14 @@
                     <div class="order-number">Order #{{ $order->id }}</div>
                     <div class="order-meta">Table {{ $order->table->table_number }}</div>
                 </div>
-                <span class="status-badge status-{{ $order->status }}">{{ ucfirst($order->status) }}</span>
+                <div style="text-align: right;">
+                    <span class="status-badge status-{{ $order->status }}" style="display: block; margin-bottom: 5px;">{{ ucfirst($order->status) }}</span>
+                    @if($order->is_checked_out)
+                        <span class="checked-out-badge">✓ Checked Out</span>
+                    @else
+                        <span class="status-badge bg-yellow-100 text-yellow-800" style="background: #fff3cd; color: #856404;">Active Order</span>
+                    @endif
+                </div>
             </div>
 
             <div class="est-time-box">
@@ -231,8 +274,15 @@
         </div>
 
         <div class="actions">
-            <a href="/menu" class="btn btn-primary">Order More Items</a>
-            <a href="/order-status/{{ $order->id }}" class="btn btn-secondary">Track Order</a>
+            @if(!$order->is_checked_out)
+                <a href="/menu" class="btn btn-primary">Order More Items</a>
+                <form action="{{ route('checkout.finalize') }}" method="POST" style="display: inline;">
+                    @csrf
+                    <button type="submit" class="btn btn-success" onclick="return confirm('Are you sure you want to checkout? This will finalize your order.')">✓ Checkout</button>
+                </form>
+            @else
+                <a href="/menu" class="btn btn-primary">Start New Order</a>
+            @endif
         </div>
     </div>
 </body>
