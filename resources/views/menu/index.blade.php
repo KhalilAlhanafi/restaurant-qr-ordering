@@ -1,5 +1,5 @@
     <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -933,8 +933,8 @@
                 <span class="logo-text">Gourmet</span>
             </div>
             <div class="header-actions">
-                <button class="lang-btn" id="lang-btn" type="button" onclick="toggleLang()">AR</button>
-                <span class="table-badge" data-en="Table {{ $table->table_number }}" data-ar="طاولة {{ $table->table_number }}">Table {{ $table->table_number }}</span>
+                <button class="lang-btn" id="lang-btn" type="button" onclick="toggleLang()">{{ app()->getLocale() === 'ar' ? 'EN' : 'AR' }}</button>
+                <span class="table-badge">{{ __('menu.table') }} {{ $table->table_number }}</span>
                 <button class="cart-icon-btn" onclick="showCartSummary()">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
@@ -948,8 +948,8 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
-            <h1 class="hero-title" data-en="Welcome — Ready to Order?" data-ar="أهلاً بك — جاهز للطلب؟">Welcome — Ready to Order?</h1>
-            <p class="hero-subtitle" data-en="Experience culinary excellence" data-ar="استمتع بتجربة الطبخ المتميز">Experience culinary excellence</p>
+            <h1 class="hero-title">{{ __('menu.welcome') }}</h1>
+            <p class="hero-subtitle" style="color: var(--accent-gold); font-weight: 500;">{{ __('menu.menu') }}</p>
         </div>
     </section>
     
@@ -973,7 +973,7 @@
                 <h2 class="category-title">{{ $category->name }}</h2>
                 <div class="menu-grid">
                     @forelse($category->items as $item)
-                        <div class="menu-item" onclick="showItemDetail({{ json_encode($item) }})" data-aos="fade-up">
+                        <div class="menu-item" data-item="{{ json_encode($item) }}" data-aos="fade-up">
                             <div class="item-image-container">
                                 @if($item->image)
                                     <img src="{{ Storage::url($item->image) }}" alt="{{ $item->name }}" class="item-image">
@@ -983,11 +983,11 @@
                                     </div>
                                 @endif
                                 @if($item->is_popular)
-                                    <span class="item-tag tag-popular">Popular</span>
+                                    <span class="item-tag tag-popular">{{ __('menu.popular') }}</span>
                                 @elseif($item->is_chef_choice)
-                                    <span class="item-tag tag-chef">Chef's Choice</span>
+                                    <span class="item-tag tag-chef">{{ __('menu.chef_choice') }}</span>
                                 @elseif($item->is_spicy)
-                                    <span class="item-tag tag-spicy">Spicy</span>
+                                    <span class="item-tag tag-spicy">{{ __('menu.spicy') }}</span>
                                 @endif
                             </div>
                             <div class="item-content">
@@ -1006,7 +1006,7 @@
                                             <circle cx="12" cy="12" r="10" stroke-width="2"/>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"/>
                                         </svg>
-                                        {{ $item->preparation_time }} min
+                                        {{ $item->preparation_time }} {{ __('menu.minutes') }}
                                     </span>
                                     <div class="item-actions" onclick="event.stopPropagation()">
                                         <div class="qty-selector" id="qty-selector-{{ $item->id }}">
@@ -1028,7 +1028,7 @@
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                             </svg>
-                            <p>No items available in this category.</p>
+                            <p>{{ __('menu.cart_empty') }}</p>
                         </div>
                     @endforelse
                 </div>
@@ -1039,10 +1039,10 @@
     <!-- Floating Cart Bar -->
     <div class="cart-bar" id="cart-bar">
         <div class="cart-info">
-            <span class="cart-count"><span id="cart-count">0</span> <span data-en="items" data-ar="عناصر">items</span></span>
+            <span class="cart-count"><span id="cart-count">0</span> {{ __('menu.items') }}</span>
             <span class="cart-total">$<span id="cart-total">0.00</span></span>
         </div>
-        <button class="view-cart-btn" onclick="showCartSummary()" data-en="View Cart" data-ar="عرض السلة">View Cart</button>
+        <button class="view-cart-btn" onclick="showCartSummary()">{{ __('menu.view_cart') }}</button>
     </div>
     
     <!-- Item Detail Modal -->
@@ -1075,7 +1075,7 @@
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
                 </svg>
-                <span id="add-to-cart-text">Add to Order</span> - $<span id="modal-total">0.00</span>
+                <span id="add-to-cart-text">{{ __('menu.add_to_order') }}</span> - $<span id="modal-total">0.00</span>
             </button>
         </div>
     </div>
@@ -1085,15 +1085,15 @@
     <div class="bottom-sheet" id="cart-modal">
         <div class="sheet-handle"></div>
         <div class="cart-summary">
-            <h2 class="summary-title" data-en="Your Order" data-ar="طلبك">Your Order</h2>
+            <h2 class="summary-title">{{ __('menu.your_order') }}</h2>
             <div id="cart-items-container">
                 <!-- Cart items will be loaded here -->
             </div>
             <div class="summary-total">
-                <span class="total-label" data-en="Total" data-ar="الإجمالي">Total</span>
+                <span class="total-label">{{ __('menu.total') }}</span>
                 <span class="total-value" id="summary-total">$0.00</span>
             </div>
-            <button class="checkout-btn" onclick="goToCheckout()" data-en="Confirm Order" data-ar="تأكيد الطلب">Confirm Order</button>
+            <button class="checkout-btn" onclick="goToCheckout()">{{ __('menu.confirm_order') }}</button>
         </div>
     </div>
     
@@ -1104,10 +1104,21 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
             </svg>
         </div>
-        <span id="toast-message" data-en="Item added to cart!" data-ar="تمت الإضافة إلى السلة!">Item added to cart!</span>
+        <span id="toast-message">{{ __('menu.item_added_to_cart') }}</span>
     </div>
     
     <script>
+        // Translations object passed from Laravel
+        const translations = {
+            no_description: "{{ __('menu.no_description') }}",
+            items_added: "{{ __('menu.items_added') }}",
+            item_added_single: "{{ __('menu.item_added_single') }}",
+            failed_to_add_item: "{{ __('menu.failed_to_add_item') }}",
+            error_adding_item: "{{ __('menu.error_adding_item') }}",
+            your_cart_is_empty: "{{ __('menu.your_cart_is_empty') }}",
+            qty: "{{ __('menu.qty') }}"
+        };
+        
         let cart = [];
         let currentItem = null;
         let currentQty = 1;
@@ -1173,42 +1184,24 @@
             }
         }
         
-        // Language toggle function
+        // Language toggle function - calls server to switch locale
         function toggleLang() {
-            var btn = document.getElementById('lang-btn');
-            var html = document.documentElement;
+            console.log('toggleLang clicked');
+            const currentLocale = document.documentElement.getAttribute('lang');
+            console.log('Current locale:', currentLocale);
+            const newLocale = currentLocale === 'ar' ? 'en' : 'ar';
+            console.log('Switching to:', newLocale);
             
-            if (!btn) return;
-            
-            var isRTL = html.getAttribute('dir') === 'rtl';
-            
-            if (isRTL) {
-                html.setAttribute('dir', 'ltr');
-                html.setAttribute('lang', 'en');
-                btn.textContent = 'AR';
-                localStorage.setItem('menu-language', 'en');
-            } else {
-                html.setAttribute('dir', 'rtl');
-                html.setAttribute('lang', 'ar');
-                btn.textContent = 'EN';
-                localStorage.setItem('menu-language', 'ar');
-            }
+            // Call server to set locale
+            const url = "{{ route('language.set') }}?locale=" + newLocale + "&redirect=menu";
+            console.log('Redirecting to:', url);
+            window.location.href = url;
         }
         
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             loadCart();
             initQuantities();
-            
-            // Apply saved language on load
-            if (localStorage.getItem('menu-language') === 'ar') {
-                var btn = document.getElementById('lang-btn');
-                var html = document.documentElement;
-                
-                html.setAttribute('dir', 'rtl');
-                html.setAttribute('lang', 'ar');
-                if (btn) btn.textContent = 'EN';
-            }
         });
         
         // Load cart from server
@@ -1250,7 +1243,7 @@
             document.getElementById('modal-image').src = item.image ? `/storage/${item.image}` : '';
             document.getElementById('modal-title').textContent = item.name;
             document.getElementById('modal-price').textContent = item.show_price ? `$${parseFloat(item.price).toFixed(2)}` : '';
-            document.getElementById('modal-description').textContent = item.description || 'No description available.';
+            document.getElementById('modal-description').textContent = item.description || translations.no_description;
             
             updateModalTotal();
             
@@ -1300,11 +1293,21 @@
         // Store quantities for each item
         let itemQuantities = {};
         
-        // Initialize quantities
+        // Initialize quantities and menu item click handlers
         function initQuantities() {
             document.querySelectorAll('.menu-item').forEach(item => {
                 const itemId = item.querySelector('.add-btn').dataset.itemId;
                 itemQuantities[itemId] = 1;
+                
+                // Add click handler for item detail modal
+                item.addEventListener('click', function(e) {
+                    // Don't trigger if clicking on action buttons
+                    if (e.target.closest('.item-actions') || e.target.closest('.qty-selector')) {
+                        return;
+                    }
+                    const itemData = JSON.parse(this.dataset.item);
+                    showItemDetail(itemData);
+                });
             });
         }
         
@@ -1361,14 +1364,15 @@
                 if (data.success) {
                     cart = data.cart;
                     updateCartDisplay();
-                    showToast(`${qty} item${qty > 1 ? 's' : ''} added to cart!`);
+                    const message = qty > 1 ? `${qty} ${translations.items_added}` : `${qty} ${translations.item_added_single}`;
+                    showToast(message);
                     animateCartBadge();
                 } else {
-                    showToast('Failed to add item', 'error');
+                    showToast(translations.failed_to_add_item, 'error');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showToast('Error adding item', 'error');
+                showToast(translations.error_adding_item, 'error');
             }
         }
         
@@ -1414,7 +1418,7 @@
             
             // Build cart items HTML
             if (cart.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 40px;">Your cart is empty</p>';
+                container.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 40px;">' + translations.your_cart_is_empty + '</p>';
                 totalEl.textContent = '$0.00';
             } else {
                 let html = '';
@@ -1428,7 +1432,7 @@
                         <div class="cart-item">
                             <div class="cart-item-info">
                                 <div class="cart-item-name">${item.name}</div>
-                                <div class="cart-item-qty">Qty: ${item.quantity}</div>
+                                <div class="cart-item-qty">${translations.qty}: ${item.quantity}</div>
                             </div>
                             <div class="cart-item-price">$${itemTotal.toFixed(2)}</div>
                         </div>

@@ -5,14 +5,16 @@
 
 @section('content')
     <!-- New Items Alert Banner -->
-    @if($order->hasUnseenUpdates())
+    @if ($order->hasUnseenUpdates())
         <div id="new-items-banner" class="bg-red-100 border-l-4 border-red-500 p-4 mb-4">
             <div class="flex justify-between items-center">
                 <div>
                     <span class="font-bold text-red-800">🔴 New items added to this order!</span>
-                    <span class="text-sm text-red-600 ml-2">{{ $order->unseenItemsCount() }} item(s) waiting to be acknowledged</span>
+                    <span class="text-sm text-red-600 ml-2">{{ $order->unseenItemsCount() }} item(s) waiting to be
+                        acknowledged</span>
                 </div>
-                <button id="mark-all-seen-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-medium" onclick="markAllAsSeen()">
+                <button id="mark-all-seen-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-medium"
+                    onclick="markAllAsSeen()">
                     ✓ Mark All as Seen
                 </button>
             </div>
@@ -29,14 +31,33 @@
                         <p class="text-sm text-gray-500">{{ $order->created_at->format('M d, Y H:i') }}</p>
                     </div>
                     <div class="flex gap-2 items-center">
-                        @if($order->hasUnseenUpdates())
-                            <span id="unseen-badge" class="px-3 py-1 text-sm font-semibold rounded-full bg-red-100 text-red-800 animate-pulse">
+                        @if ($order->hasUnseenUpdates())
+                            <span id="unseen-badge"
+                                class="px-3 py-1 text-sm font-semibold rounded-full bg-red-100 text-red-800 animate-pulse">
                                 🔴 {{ $order->unseenItemsCount() }} New
                             </span>
                         @endif
-                        <a href="{{ route('admin.orders.add-items', $order) }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium">
+                        <a href="{{ route('admin.orders.add-items', $order) }}"
+                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium">
                             + Add Items
                         </a>
+                        <button onclick="printOrder('receipt')"
+                            class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded text-sm font-medium flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+                                </path>
+                            </svg>
+                            Receipt
+                        </button>
+                        <button onclick="printOrder('kitchen')"
+                            class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded text-sm font-medium flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Kitchen
+                        </button>
                         @php
                             $statusColors = [
                                 'pending' => 'bg-yellow-100 text-yellow-800',
@@ -47,7 +68,8 @@
                                 'cancelled' => 'bg-red-100 text-red-800',
                             ];
                         @endphp
-                        <span class="px-3 py-1 text-sm font-semibold rounded-full {{ $statusColors[$order->status] ?? 'bg-gray-100 text-gray-800' }}">
+                        <span
+                            class="px-3 py-1 text-sm font-semibold rounded-full {{ $statusColors[$order->status] ?? 'bg-gray-100 text-gray-800' }}">
                             {{ ucfirst($order->status) }}
                         </span>
                     </div>
@@ -65,16 +87,18 @@
                         </tr>
                     </thead>
                     <tbody id="order-items-tbody">
-                        @foreach($order->orderItems as $orderItem)
-                            <tr id="item-row-{{ $orderItem->id }}" class="border-b order-item-row {{ $orderItem->admin_seen_at ? '' : 'new-item-highlight' }}"
+                        @foreach ($order->orderItems as $orderItem)
+                            <tr id="item-row-{{ $orderItem->id }}"
+                                class="border-b order-item-row {{ $orderItem->admin_seen_at ? '' : 'new-item-highlight' }}"
                                 data-item-id="{{ $orderItem->id }}"
                                 data-is-unseen="{{ $orderItem->admin_seen_at ? 'false' : 'true' }}">
                                 <td class="py-3">
                                     <div class="font-medium">{{ $orderItem->item->name ?? 'N/A' }}</div>
-                                    @if($orderItem->special_instructions)
-                                        <div class="text-xs text-gray-500">Note: {{ $orderItem->special_instructions }}</div>
+                                    @if ($orderItem->special_instructions)
+                                        <div class="text-xs text-gray-500">Note: {{ $orderItem->special_instructions }}
+                                        </div>
                                     @endif
-                                    @if(!$orderItem->admin_seen_at)
+                                    @if (!$orderItem->admin_seen_at)
                                         <span class="new-item-badge">NEW</span>
                                     @endif
                                 </td>
@@ -82,10 +106,11 @@
                                 <td class="text-right py-3">${{ number_format($orderItem->unit_price, 2) }}</td>
                                 <td class="text-right py-3 font-medium">${{ number_format($orderItem->subtotal, 2) }}</td>
                                 <td class="text-center py-3">
-                                    @if(!$orderItem->admin_seen_at)
-                                        <button class="mark-item-seen-btn bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-medium"
-                                                data-item-id="{{ $orderItem->id }}"
-                                                onclick="markItemAsSeen({{ $orderItem->id }}, this)">
+                                    @if (!$orderItem->admin_seen_at)
+                                        <button
+                                            class="mark-item-seen-btn bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-medium"
+                                            data-item-id="{{ $orderItem->id }}"
+                                            onclick="markItemAsSeen({{ $orderItem->id }}, this)">
                                             ✓ Check
                                         </button>
                                     @else
@@ -98,7 +123,8 @@
                     <tfoot>
                         <tr>
                             <td colspan="4" class="text-right py-3 font-semibold">Total:</td>
-                            <td class="text-right py-3 font-bold text-lg">${{ number_format($order->total_amount, 2) }}</td>
+                            <td class="text-right py-3 font-bold text-lg">${{ number_format($order->total_amount, 2) }}
+                            </td>
                         </tr>
                     </tfoot>
                 </table>
@@ -110,7 +136,8 @@
                 <form action="{{ route('admin.orders.update-status', $order) }}" method="POST" class="flex gap-2">
                     @csrf
                     @method('PUT')
-                    <select name="status" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select name="status"
+                        class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>Pending</option>
                         <option value="preparing" {{ $order->status == 'preparing' ? 'selected' : '' }}>Preparing</option>
                         <option value="ready" {{ $order->status == 'ready' ? 'selected' : '' }}>Ready</option>
@@ -138,7 +165,7 @@
                         <p class="text-sm text-gray-500">Phone</p>
                         <p class="font-medium">{{ $order->customer_phone ?? 'N/A' }}</p>
                     </div>
-                    @if($order->notes)
+                    @if ($order->notes)
                         <div>
                             <p class="text-sm text-gray-500">Notes</p>
                             <p class="font-medium">{{ $order->notes }}</p>
@@ -147,7 +174,7 @@
                 </div>
             </div>
 
-            @if($order->checkout)
+            @if ($order->checkout)
                 <div class="bg-white shadow rounded-lg p-6 mt-6">
                     <h3 class="font-semibold mb-4">Payment</h3>
                     <div class="space-y-3">
@@ -159,7 +186,7 @@
                             <p class="text-sm text-gray-500">Amount Paid</p>
                             <p class="font-medium">${{ number_format($order->checkout->amount_paid, 2) }}</p>
                         </div>
-                        @if($order->checkout->tip_amount > 0)
+                        @if ($order->checkout->tip_amount > 0)
                             <div>
                                 <p class="text-sm text-gray-500">Tip</p>
                                 <p class="font-medium">${{ number_format($order->checkout->tip_amount, 2) }}</p>
@@ -174,19 +201,26 @@
 
 <style>
     @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.7; }
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.7;
+        }
     }
-    
+
     .animate-pulse {
         animation: pulse 1.5s ease-in-out infinite;
     }
-    
+
     .new-item-highlight {
         background-color: #fff3cd;
         border-left: 3px solid #dc3545;
     }
-    
+
     .new-item-badge {
         display: inline-block;
         background: #dc3545;
@@ -232,7 +266,7 @@
 
                 // Update counts
                 updateUnseenCounts();
-                
+
                 // Trigger storage event to update main orders list
                 const remainingUnseen = document.querySelectorAll('[data-is-unseen="true"]').length;
                 localStorage.setItem('orderSeenUpdated', JSON.stringify({
@@ -240,7 +274,7 @@
                     seenItems: remainingUnseen,
                     timestamp: Date.now()
                 }));
-                
+
                 // Remove the storage item after a short delay
                 setTimeout(() => {
                     localStorage.removeItem('orderSeenUpdated');
@@ -344,21 +378,25 @@
                             newBtn.addEventListener('click', async function() {
                                 const newItemId = this.dataset.itemId;
                                 try {
-                                    const markResponse = await fetch(`/admin/orders/${orderId}/items/${newItemId}/mark-seen`, {
-                                        method: 'POST',
-                                        headers: {
-                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                            'Content-Type': 'application/json'
-                                        }
-                                    });
+                                    const markResponse = await fetch(
+                                        `/admin/orders/${orderId}/items/${newItemId}/mark-seen`, {
+                                            method: 'POST',
+                                            headers: {
+                                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                                'Content-Type': 'application/json'
+                                            }
+                                        });
 
                                     if (markResponse.ok) {
-                                        const newRowEl = document.getElementById(`item-row-${newItemId}`);
+                                        const newRowEl = document.getElementById(
+                                            `item-row-${newItemId}`);
                                         newRowEl.classList.remove('new-item-highlight');
                                         newRowEl.dataset.isUnseen = 'false';
-                                        const newBadge = newRowEl.querySelector('.new-item-badge');
+                                        const newBadge = newRowEl.querySelector(
+                                            '.new-item-badge');
                                         if (newBadge) newBadge.remove();
-                                        this.parentElement.innerHTML = '<span class="text-green-600">✓</span>';
+                                        this.parentElement.innerHTML =
+                                            '<span class="text-green-600">✓</span>';
                                         updateUnseenCounts();
                                     }
                                 } catch (error) {
@@ -401,7 +439,8 @@
                 }
 
                 // Update total
-                document.querySelector('tfoot td:last-child').textContent = '$' + parseFloat(data.total_amount).toFixed(2);
+                document.querySelector('tfoot td:last-child').textContent = '$' + parseFloat(data.total_amount)
+                    .toFixed(2);
             }
         } catch (error) {
             console.error('Error checking for order updates:', error);
@@ -433,14 +472,14 @@
                 if (banner) banner.remove();
                 const unseenBadge = document.getElementById('unseen-badge');
                 if (unseenBadge) unseenBadge.remove();
-                
+
                 // Trigger storage event to update main orders list
                 localStorage.setItem('orderSeenUpdated', JSON.stringify({
                     orderId: orderId,
                     seenItems: 0,
                     timestamp: Date.now()
                 }));
-                
+
                 // Remove the storage item after a short delay to prevent re-triggering
                 setTimeout(() => {
                     localStorage.removeItem('orderSeenUpdated');
@@ -472,4 +511,30 @@
 
     // Check for updates every 3 seconds
     setInterval(checkForOrderUpdates, 3000);
+
+    async function printOrder(type) {
+        let url = type === 'receipt' ? `/admin/orders/${orderId}/print-receipt` :
+            `/admin/orders/${orderId}/print-kitchen`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                alert(data.message);
+            } else {
+                alert(data.message || 'Printing failed');
+            }
+        } catch (error) {
+            console.error('Print error:', error);
+            alert('An error occurred while printing.');
+        }
+    }
 </script>

@@ -459,34 +459,34 @@
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
             </svg>
-            Back
+            {{ __('menu.back') }}
         </a>
         <div class="logo">
             <div class="logo-icon">🍽</div>
         </div>
-        <span class="table-badge">Table {{ $table->table_number }}</span>
+        <span class="table-badge">{{ __('menu.table') }} {{ $table->table_number }}</span>
     </header>
 
     <div class="container">
         <!-- Cart Items Card -->
         <div class="card">
-            <h2 class="card-title">Your Order</h2>
+            <h2 class="card-title">{{ __('menu.your_order') }}</h2>
             <div id="cart-items">
                 <!-- Cart items loaded here -->
             </div>
             <div id="empty-cart" class="empty-state" style="display: none;">
                 <div class="empty-icon">🛒</div>
-                <div class="empty-title">Your cart is empty</div>
-                <p class="empty-text">Add some delicious items to get started</p>
+                <div class="empty-title">{{ __('menu.your_cart_is_empty') }}</div>
+                <p class="empty-text">{{ __('menu.add_delicious_items') }}</p>
                 <a href="/menu" class="browse-btn">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                     </svg>
-                    Browse Menu
+                    {{ __('menu.browse_menu') }}
                 </a>
             </div>
             <div class="total-section" id="cart-total-section">
-                <span class="total-label">Total</span>
+                <span class="total-label">{{ __('menu.total') }}</span>
                 <span class="total-value" id="cart-total">$0.00</span>
             </div>
         </div>
@@ -496,31 +496,31 @@
             <div class="est-time-box">
                 <div class="est-time-icon">⏱️</div>
                 <div class="est-time-content">
-                    <div class="est-time-label">Estimated Ready Time</div>
-                    <div class="est-time-value">{{ $estimatedTime }} minutes</div>
+                    <div class="est-time-label">{{ __('menu.estimated_ready_time') }}</div>
+                    <div class="est-time-value">{{ $estimatedTime }} {{ __('menu.minutes') }}</div>
                 </div>
             </div>
-            <p class="est-time-note">* Estimated time may vary based on current kitchen load</p>
+            <p class="est-time-note">{{ __('menu.estimated_time_note') }}</p>
         </div>
 
         <!-- Special Requests Card -->
         <div class="card" id="notes-card">
-            <h2 class="card-title">Special Requests</h2>
-            <textarea id="special-requests" class="notes-area" placeholder="Any special dietary requirements, allergies, or specific requests? Let us know and we'll do our best to accommodate."></textarea>
+            <h2 class="card-title">{{ __('menu.special_requests') }}</h2>
+            <textarea id="special-requests" class="notes-area" placeholder="{{ __('menu.any_special_requests') }}"></textarea>
         </div>
     </div>
 
     <!-- Bottom Bar -->
     <div class="bottom-bar" id="bottom-bar">
         <div class="summary-info">
-            <span class="summary-items" id="summary-items">0 items</span>
+            <span class="summary-items" id="summary-items">0 {{ __('menu.items') }}</span>
             <span class="summary-total" id="bottom-total">$0.00</span>
         </div>
         <button class="place-order-btn" id="place-order-btn" onclick="placeOrder()">
             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
-            Place Order
+            {{ __('menu.place_order') }}
         </button>
     </div>
 
@@ -531,12 +531,12 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
             </svg>
         </div>
-        <span id="toast-message">Item added!</span>
+        <span id="toast-message">{{ __('menu.item_added') }}</span>
     </div>
 
-    <script>
+    <script data-estimated-time="{{ $estimatedTime }}">
         let cart = [];
-        let estimatedMinutes = {{ $estimatedTime }};
+        let estimatedMinutes = parseInt(document.currentScript.dataset.estimatedTime);
 
         // Load cart
         async function loadCart() {
@@ -594,7 +594,7 @@
                                 <button class="qty-btn" onclick="updateQuantity(${index}, -1)">−</button>
                                 <span class="qty-value">${item.quantity}</span>
                                 <button class="qty-btn" onclick="updateQuantity(${index}, 1)">+</button>
-                                <span class="remove-btn" onclick="removeItem(${index})">Remove</span>
+                                <span class="remove-btn" onclick="removeItem(${index})">{{ __('menu.remove') }}</span>
                             </div>
                         </div>
                         <div class="item-price">
@@ -654,7 +654,7 @@
                 if (data.success) {
                     cart = data.cart;
                     renderCart();
-                    showToast('Item removed');
+                    showToast('{{ __('menu.item_removed') }}');
                 }
             } catch (error) {
                 console.error('Error removing item:', error);
@@ -664,7 +664,7 @@
         async function placeOrder() {
             const btn = document.getElementById('place-order-btn');
             btn.disabled = true;
-            btn.innerHTML = '<span>Placing...</span>';
+            btn.innerHTML = '<span>{{ __('menu.placing') }}</span>';
             
             const specialRequests = document.getElementById('special-requests').value;
             
@@ -686,24 +686,24 @@
                 if (response.ok && data.success) {
                     window.location.href = data.redirect || ('/order-confirmation/' + data.order_id);
                 } else {
-                    showToast(data.message || 'Error placing order');
+                    showToast(data.message || '{{ __('menu.error_placing_order') }}');
                     btn.disabled = false;
                     btn.innerHTML = `
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                         </svg>
-                        Place Order
+                        {{ __('menu.place_order') }}
                     `;
                 }
             } catch (error) {
                 console.error('Error placing order:', error);
-                showToast('Error placing order');
+                showToast('{{ __('menu.error_placing_order') }}');
                 btn.disabled = false;
                 btn.innerHTML = `
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
-                    Place Order
+                    {{ __('menu.place_order') }}
                 `;
             }
         }

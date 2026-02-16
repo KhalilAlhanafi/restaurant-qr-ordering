@@ -21,19 +21,21 @@ class DashboardController extends Controller
             'today_reservations' => Reservation::whereDate('start_time', today())->count(),
             'total_revenue' => Order::whereDate('created_at', today())->sum('total_amount'),
         ];
-        
-        $recentOrders = Order::with(['table', 'orderItems'])
+
+        $recentOrders = Order::with(['table', 'orderItems.item'])
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
-            
+
         $upcomingReservations = Reservation::with('table')
             ->where('start_time', '>=', now())
             ->whereIn('status', ['pending', 'confirmed'])
             ->orderBy('start_time')
             ->limit(5)
             ->get();
-        
-        return view('admin.dashboard', compact('stats', 'recentOrders', 'upcomingReservations'));
+
+        $tables = RestaurantTable::all();
+
+        return view('admin.dashboard', compact('stats', 'recentOrders', 'upcomingReservations', 'tables'));
     }
 }

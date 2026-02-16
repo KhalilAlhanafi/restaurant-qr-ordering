@@ -26,13 +26,40 @@ class QRController extends Controller
         session(['table_number' => $table->table_number]);
         session(['qr_token' => $token]);
 
-        // Redirect to menu
-        return redirect()->route('menu.index');
+        // Check if language already selected
+        if (session()->has('locale')) {
+            // Redirect to menu
+            return redirect()->route('menu.index');
+        }
+
+        // Redirect to language selection
+        return view('menu.language-select', compact('table'));
     }
 
     public function required()
     {
         return view('qr.required');
+    }
+
+    public function setLanguage(Request $request)
+    {
+        $validated = $request->validate([
+            'locale' => 'required|in:en,ar',
+            'redirect' => 'nullable|string'
+        ]);
+
+        // Store locale in session
+        session(['locale' => $validated['locale']]);
+        app()->setLocale($validated['locale']);
+
+        // Redirect to specified page or menu
+        $redirect = $validated['redirect'] ?? 'menu';
+        
+        if ($redirect === 'menu') {
+            return redirect()->route('menu.index');
+        }
+
+        return redirect()->back();
     }
 
     public function generateAll()

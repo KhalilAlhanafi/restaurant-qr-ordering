@@ -43,6 +43,19 @@
                 @enderror
             </div>
             
+            <div class="mb-4">
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status *</label>
+                <select name="status" id="status" required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="available" {{ old('status', $table->status) == 'available' ? 'selected' : '' }}>Available</option>
+                    <option value="occupied" {{ old('status', $table->status) == 'occupied' ? 'selected' : '' }}>Occupied</option>
+                    
+                </select>
+                @error('status')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+            
             <div class="mb-4 p-4 bg-gray-50 rounded-lg">
                 <label class="block text-sm font-medium text-gray-700 mb-2">QR Token</label>
                 <div class="flex items-center">

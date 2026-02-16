@@ -518,8 +518,8 @@
         <div class="order-card">
             <div class="order-header">
                 <div class="order-info">
-                    <h2>Order #{{ $order->id }}</h2>
-                    <p class="order-meta">Table {{ $order->table->table_number }}</p>
+                    <h2>{{ __('menu.order_number') }} #{{ $order->id }}</h2>
+                    <p class="order-meta">{{ __('menu.table') }} {{ $order->table->table_number }}</p>
                 </div>
                 <div class="status-wrapper">
                     <span class="status-badge status-{{ $order->status }}">
@@ -527,7 +527,7 @@
                         {{ ucfirst($order->status) }}
                     </span>
                     @if($order->is_checked_out)
-                        <span class="checked-out-badge">✓ Paid</span>
+                        <span class="checked-out-badge">✓ {{ __('menu.paid') }}</span>
                     @endif
                 </div>
             </div>
@@ -537,34 +537,34 @@
             <div class="progress-tracker" id="progress-tracker">
                 <div class="progress-step">
                     <div class="step-icon {{ in_array($order->status, ['pending', 'preparing', 'ready', 'served', 'completed']) ? 'completed' : 'active' }}">✓</div>
-                    <span class="step-label">Received</span>
+                    <span class="step-label">{{ __('menu.status_received') }}</span>
                 </div>
                 <div class="progress-step">
                     <div class="step-icon {{ in_array($order->status, ['preparing', 'ready', 'served', 'completed']) ? (in_array($order->status, ['ready', 'served', 'completed']) ? 'completed' : 'active') : '' }}">
                         {{ in_array($order->status, ['ready', 'served', 'completed']) ? '✓' : '👨‍🍳' }}
                     </div>
-                    <span class="step-label">Preparing</span>
+                    <span class="step-label">{{ __('menu.status_preparing') }}</span>
                 </div>
                 <div class="progress-step">
                     <div class="step-icon {{ in_array($order->status, ['ready', 'served', 'completed']) ? (in_array($order->status, ['served', 'completed']) ? 'completed' : 'active') : '' }}">
                         {{ in_array($order->status, ['served', 'completed']) ? '✓' : '🍽' }}
                     </div>
-                    <span class="step-label">Ready</span>
+                    <span class="step-label">{{ __('menu.status_ready') }}</span>
                 </div>
                 <div class="progress-step">
                     <div class="step-icon {{ $order->status === 'completed' ? 'completed' : '' }}">
                         {{ $order->status === 'completed' ? '✓' : '✨' }}
                     </div>
-                    <span class="step-label">Served</span>
+                    <span class="step-label">{{ __('menu.status_served') }}</span>
                 </div>
             </div>
             
             <!-- Estimated Time -->
             <div class="est-time-box">
-                <div class="est-time-label">Estimated Ready In</div>
+                <div class="est-time-label">{{ __('menu.estimated_time') }}</div>
                 <div class="est-time-value">
                     <span id="est-minutes">{{ $order->estimated_minutes }}</span>
-                    <span class="est-time-unit">min</span>
+                    <span class="est-time-unit">{{ __('menu.minutes') }}</span>
                 </div>
             </div>
             @endif
@@ -572,7 +572,7 @@
 
         <!-- Order Details Card -->
         <div class="order-card">
-            <h3 class="section-title">Order Details</h3>
+            <h3 class="section-title">{{ __('menu.order_details') }}</h3>
             <ul class="item-list">
                 @foreach($order->orderItems as $orderItem)
                     <li class="item-row">
@@ -593,13 +593,13 @@
 
             @if($order->special_requests)
                 <div class="special-requests">
-                    <div class="special-requests-label">Special Requests</div>
+                    <div class="special-requests-label">{{ __('menu.special_requests') }}</div>
                     <div class="special-requests-text">{{ $order->special_requests }}</div>
                 </div>
             @endif
 
             <div class="total-section">
-                <span class="total-label">Total Amount</span>
+                <span class="total-label">{{ __('menu.total_amount') }}</span>
                 <span class="total-value">${{ number_format($order->total_amount, 2) }}</span>
             </div>
         </div>
@@ -612,15 +612,15 @@
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                 </svg>
-                Add More
+                {{ __('menu.add_more') }}
             </a>
             <form action="{{ route('checkout.finalize') }}" method="POST" style="flex: 1;">
                 @csrf
-                <button type="submit" class="btn btn-primary" onclick="return confirm('Are you sure you want to checkout? This will finalize your order.')">
+                <button type="submit" class="btn btn-primary" onclick="return confirm('{{ __('menu.checkout_confirm') }}')">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
-                    Checkout
+                    {{ __('menu.checkout') }}
                 </button>
             </form>
         @else
@@ -628,7 +628,7 @@
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                 </svg>
-                Start New Order
+                {{ __('menu.start_new_order') }}
             </a>
         @endif
     </div>
@@ -636,10 +636,23 @@
     <!-- Status Notification -->
     <div class="status-notification" id="status-notification">
         <div class="status-icon">🍽</div>
-        <span id="notification-text">Your order is being prepared!</span>
+        <span id="notification-text">{{ __('menu.your_order_is_being_prepared') }}</span>
     </div>
 
     <script>
+        // Translations from Laravel
+        const trans = {
+            orderReceived: "{{ __('menu.order_received') }}",
+            nowPreparing: "{{ __('menu.now_preparing') }}",
+            orderReady: "{{ __('menu.order_ready') }}",
+            orderServed: "{{ __('menu.order_served') }}",
+            orderCompleted: "{{ __('menu.order_completed') }}",
+            statusReceived: "{{ __('menu.status_received') }}",
+            statusPreparing: "{{ __('menu.status_preparing') }}",
+            statusReady: "{{ __('menu.status_ready') }}",
+            statusServed: "{{ __('menu.status_served') }}",
+        };
+        
         // Simple polling for order status updates (no WebSocket needed)
         let lastStatus = '{{ $order->status }}';
         
@@ -667,7 +680,14 @@
             const badge = document.querySelector('.status-badge');
             if (badge) {
                 badge.className = 'status-badge status-' + status;
-                badge.innerHTML = '<span class="pulse"></span>' + status.charAt(0).toUpperCase() + status.slice(1);
+                const statusText = {
+                    'pending': trans.statusReceived,
+                    'preparing': trans.statusPreparing,
+                    'ready': trans.statusReady,
+                    'served': trans.statusServed,
+                    'completed': trans.statusServed
+                };
+                badge.innerHTML = '<span class="pulse"></span>' + (statusText[status] || status);
             }
             
             // Update progress tracker
@@ -693,11 +713,11 @@
         
         function showStatusNotification(status) {
             const notifications = {
-                'pending': 'Order Received! We\'ve got it.',
-                'preparing': 'Now Preparing! Chef is cooking.',
-                'ready': 'Order Ready! Please collect.',
-                'served': 'Order Served! Enjoy your meal.',
-                'completed': 'Order Completed! Thank you.'
+                'pending': trans.orderReceived,
+                'preparing': trans.nowPreparing,
+                'ready': trans.orderReady,
+                'served': trans.orderServed,
+                'completed': trans.orderCompleted
             };
             
             if (!notifications[status]) return;

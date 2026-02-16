@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'printer' => [
+        'connection' => env('PRINTER_CONNECTION', 'log'),
+        'ip' => env('PRINTER_IP', '127.0.0.1'),
+        'port' => env('PRINTER_PORT', 9100),
+        'name' => env('PRINTER_NAME', 'LPT1'),
+        'path' => env('PRINTER_PATH', storage_path('app/printer_output.bin')),
+    ],
+
 ];

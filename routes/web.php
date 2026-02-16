@@ -17,62 +17,69 @@ Route::get('/', function () {
 });
 
 // QR Code Routes
-Route::get('/scan/{token}', [QRController::class, 'scan'])->name('qr.scan');
-Route::get('/qr-required', [QRController::class, 'required'])->name('qr.required');
+Route::get('/scan/{token}', [QRController::class, 'scan'])
+    ->middleware('web')
+    ->name('qr.scan');
+Route::get('/qr-required', [QRController::class, 'required'])
+    ->middleware('web')
+    ->name('qr.required');
+Route::get('/language', [QRController::class, 'setLanguage'])
+    ->middleware('web')
+    ->name('language.set');
 
 // Menu Route (requires table identification)
 Route::get('/menu', [MenuController::class, 'index'])
-    ->middleware('identify.table')
+    ->middleware(['identify.table', 'set.locale'])
     ->name('menu.index');
 
 // Cart Routes (requires table identification)
 Route::get('/cart', [CartController::class, 'index'])
-    ->middleware('identify.table')
+    ->middleware(['identify.table', 'set.locale'])
     ->name('cart.index');
 Route::post('/cart/add', [CartController::class, 'add'])
-    ->middleware('identify.table')
+    ->middleware(['identify.table', 'set.locale'])
     ->name('cart.add');
 Route::put('/cart/update', [CartController::class, 'update'])
-    ->middleware('identify.table')
+    ->middleware(['identify.table', 'set.locale'])
     ->name('cart.update');
 Route::delete('/cart/remove', [CartController::class, 'remove'])
-    ->middleware('identify.table')
+    ->middleware(['identify.table', 'set.locale'])
     ->name('cart.remove');
 Route::delete('/cart/clear', [CartController::class, 'clear'])
-    ->middleware('identify.table')
+    ->middleware(['identify.table', 'set.locale'])
     ->name('cart.clear');
 Route::get('/cart/summary', [CartController::class, 'summary'])
-    ->middleware('identify.table')
+    ->middleware(['identify.table', 'set.locale'])
     ->name('cart.summary');
 
 // Checkout Routes (requires table identification)
 Route::get('/checkout', [CheckoutController::class, 'index'])
-    ->middleware('identify.table')
+    ->middleware(['identify.table', 'set.locale'])
     ->name('checkout.index');
 Route::post('/checkout', [CheckoutController::class, 'store'])
-    ->middleware('identify.table')
+    ->middleware(['identify.table', 'set.locale'])
     ->name('checkout.store');
 Route::get('/order-confirmation/{order}', [CheckoutController::class, 'confirmation'])
-    ->middleware('identify.table')
+    ->middleware(['identify.table', 'set.locale'])
     ->name('order.confirmation');
 Route::post('/checkout-finalize', [CheckoutController::class, 'checkout'])
-    ->middleware('identify.table')
+    ->middleware(['identify.table', 'set.locale'])
     ->name('checkout.finalize');
 
 // Admin Routes
 Route::prefix('admin')->name('admin.')->group(function () {
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-    
+
     // Categories CRUD
     Route::resource('categories', CategoryController::class);
-    
+
     // Items CRUD
     Route::resource('items', ItemController::class)->except(['show']);
-    
+
     // Tables CRUD
     Route::resource('tables', TableController::class)->except(['show']);
-    
+
     // Reservations
     Route::get('/reservations', [ReservationController::class, 'index'])->name('reservations.index');
     Route::get('/reservations/create', [ReservationController::class, 'create'])->name('reservations.create');
@@ -81,7 +88,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::put('/reservations/{reservation}', [ReservationController::class, 'update'])->name('reservations.update');
     Route::delete('/reservations/{reservation}', [ReservationController::class, 'destroy'])->name('reservations.destroy');
     Route::get('/reservations/timeline', [ReservationController::class, 'timeline'])->name('reservations.timeline');
-    
+
     // Orders
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/recent', [OrderController::class, 'recent'])->name('orders.recent');
@@ -93,7 +100,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/orders/{order}/add-items', [OrderController::class, 'addItems'])->name('orders.add-items');
     Route::post('/orders/{order}/add-items', [OrderController::class, 'storeItems'])->name('orders.store-items');
     Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
-    
+    Route::post('/orders/{order}/print-receipt', [\App\Http\Controllers\Admin\PrintController::class, 'printReceipt'])->name('orders.print-receipt');
+    Route::post('/orders/{order}/print-kitchen', [\App\Http\Controllers\Admin\PrintController::class, 'printKitchen'])->name('orders.print-kitchen');
+
     // QR Codes
     Route::get('/qr-codes', [QRController::class, 'generateAll'])->name('qr-codes');
     Route::get('/qr-code-image/{token}', [QRController::class, 'generateQrImage'])->name('qr-code-image');

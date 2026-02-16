@@ -53,6 +53,7 @@ class TableController extends Controller
             'table_number' => 'required|string|unique:restaurant_tables,table_number,' . $table->id,
             'capacity' => 'required|integer|min:1',
             'location' => 'required|in:indoor,outdoor,balcony,second floor,second floor balcony',
+            'status' => 'required|in:available,occupied',
         ]);
 
         $table->update($validated);
