@@ -2,303 +2,603 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Checkout - Table {{ $table->table_number }}</title>
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
+        
+        :root {
+            --bg-dark: #1a1a2e;
+            --bg-card: #ffffff;
+            --accent-gold: #d4af37;
+            --accent-gold-light: #f4d03f;
+            --text-dark: #1a1a2e;
+            --text-muted: #6b7280;
+            --text-light: #ffffff;
+            --success: #10b981;
+            --danger: #ef4444;
+            --shadow: 0 4px 20px rgba(0,0,0,0.15);
+            --shadow-soft: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #f8f9fa;
-            padding-bottom: 100px;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-dark);
+            line-height: 1.5;
+            min-height: 100vh;
+            padding-bottom: 120px;
         }
+        
+        /* Header */
         .header {
-            background: #fff;
-            padding: 15px 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: var(--bg-dark);
+            padding: 16px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid rgba(212,175,55,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        h1 {
-            font-size: 20px;
-            color: #333;
-        }
-        .table-badge {
-            background: #007bff;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-        }
+        
         .back-btn {
-            color: #007bff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-light);
             text-decoration: none;
-            font-size: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
         }
+        
+        .back-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .back-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .table-badge {
+            background: rgba(212,175,55,0.15);
+            color: var(--accent-gold);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid rgba(212,175,55,0.3);
+        }
+        
+        /* Container */
         .container {
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
         }
-        .section {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-soft);
         }
-        .section-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 15px;
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
+        
+        .card-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, #e5e7eb, transparent);
+        }
+        
+        /* Cart Items */
         .cart-item {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #f0f0f0;
+            align-items: flex-start;
+            padding: 16px 0;
+            border-bottom: 1px solid #f3f4f6;
         }
+        
         .cart-item:last-child {
             border-bottom: none;
         }
-        .item-info {
+        
+        .item-details {
             flex: 1;
         }
+        
         .item-name {
-            font-weight: 500;
-            color: #333;
-        }
-        .item-quantity {
-            color: #666;
-            font-size: 14px;
-        }
-        .item-price {
+            font-size: 16px;
             font-weight: 600;
-            color: #28a745;
+            color: var(--text-dark);
+            margin-bottom: 8px;
         }
-        .item-price.hidden {
-            color: #999;
-            font-style: italic;
-        }
-        .quantity-control {
+        
+        .item-controls {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-top: 8px;
+            gap: 12px;
         }
+        
         .qty-btn {
-            width: 32px;
-            height: 32px;
-            border: 1px solid #ddd;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
             background: white;
-            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            font-size: 16px;
-        }
-        .qty-value {
+            font-size: 18px;
             font-weight: 600;
-            min-width: 24px;
+            color: var(--text-dark);
+            transition: all 0.2s ease;
+        }
+        
+        .qty-btn:hover {
+            border-color: var(--accent-gold);
+            background: rgba(212,175,55,0.1);
+        }
+        
+        .qty-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+            min-width: 30px;
             text-align: center;
         }
+        
         .remove-btn {
-            color: #dc3545;
-            font-size: 12px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-        .notes-area {
-            width: 100%;
-            min-height: 80px;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 14px;
-            resize: vertical;
-        }
-        .est-time {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 15px;
-            background: #e8f4fd;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-        .est-time-icon {
-            font-size: 24px;
-        }
-        .est-time-text {
-            font-size: 14px;
-            color: #333;
-        }
-        .est-time-value {
+            color: var(--danger);
+            font-size: 13px;
             font-weight: 600;
-            color: #007bff;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
         }
-        .cart-total {
+        
+        .remove-btn:hover {
+            background: rgba(239,68,68,0.1);
+        }
+        
+        .item-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent-gold);
+            text-align: right;
+        }
+        
+        /* Total Section */
+        .total-section {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 0;
-            border-top: 2px solid #f0f0f0;
-            font-size: 18px;
-            font-weight: 600;
+            padding-top: 20px;
+            margin-top: 16px;
+            border-top: 2px solid #e5e7eb;
         }
+        
         .total-label {
-            color: #333;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
         }
+        
         .total-value {
-            color: #28a745;
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--accent-gold);
         }
-        .empty-cart {
+        
+        /* Est Time */
+        .est-time-box {
+            background: linear-gradient(135deg, rgba(212,175,55,0.1), rgba(212,175,55,0.05));
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border: 1px solid rgba(212,175,55,0.2);
+        }
+        
+        .est-time-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(212,175,55,0.3);
+        }
+        
+        .est-time-content {
+            flex: 1;
+        }
+        
+        .est-time-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .est-time-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+        
+        .est-time-note {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 12px;
+        }
+        
+        /* Special Requests */
+        .notes-area {
+            width: 100%;
+            min-height: 100px;
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 15px;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+        
+        .notes-area:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.1);
+        }
+        
+        /* Empty State */
+        .empty-state {
             text-align: center;
-            padding: 40px;
-            color: #666;
+            padding: 60px 20px;
         }
+        
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+        }
+        
+        .empty-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+        
+        .empty-text {
+            font-size: 15px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+        
+        .browse-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+            color: var(--bg-dark);
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 15px;
+            box-shadow: 0 4px 15px rgba(212,175,55,0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .browse-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(212,175,55,0.5);
+        }
+        
+        /* Bottom Bar */
         .bottom-bar {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: white;
-            padding: 15px 20px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            background: var(--bg-card);
+            padding: 16px 20px 24px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            z-index: 100;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .total-summary {
-            font-size: 16px;
+        
+        .bottom-bar.visible {
+            transform: translateY(0);
         }
-        .total-amount {
-            font-weight: 700;
-            color: #28a745;
-            font-size: 20px;
+        
+        .summary-info {
+            display: flex;
+            flex-direction: column;
         }
+        
+        .summary-items {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        
+        .summary-total {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent-gold);
+        }
+        
         .place-order-btn {
-            background: #28a745;
-            color: white;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+            color: var(--bg-dark);
             border: none;
-            padding: 14px 30px;
-            border-radius: 25px;
-            cursor: pointer;
+            border-radius: 14px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(212,175,55,0.4);
+            transition: all 0.3s ease;
         }
+        
+        .place-order-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(212,175,55,0.5);
+        }
+        
         .place-order-btn:disabled {
-            background: #6c757d;
+            background: #e5e7eb;
+            color: #9ca3af;
             cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--text-dark);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        .toast-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <a href="/menu" class="back-btn">← Back to Menu</a>
+    <!-- Header -->
+    <header class="header">
+        <a href="/menu" class="back-btn">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Back
+        </a>
+        <div class="logo">
+            <div class="logo-icon">🍽</div>
+        </div>
         <span class="table-badge">Table {{ $table->table_number }}</span>
-    </div>
+    </header>
 
     <div class="container">
-        <div class="section">
-            <h2 class="section-title">Your Order</h2>
+        <!-- Cart Items Card -->
+        <div class="card">
+            <h2 class="card-title">Your Order</h2>
             <div id="cart-items">
-                <!-- Cart items will be loaded here -->
+                <!-- Cart items loaded here -->
             </div>
-            <div id="empty-cart" class="empty-cart" style="display: none;">
-                Your cart is empty. <a href="/menu">Browse the menu</a>
+            <div id="empty-cart" class="empty-state" style="display: none;">
+                <div class="empty-icon">🛒</div>
+                <div class="empty-title">Your cart is empty</div>
+                <p class="empty-text">Add some delicious items to get started</p>
+                <a href="/menu" class="browse-btn">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    Browse Menu
+                </a>
             </div>
-            <div class="cart-total">
-                <span class="total-label">Total:</span>
+            <div class="total-section" id="cart-total-section">
+                <span class="total-label">Total</span>
                 <span class="total-value" id="cart-total">$0.00</span>
             </div>
         </div>
 
-        <div class="section">
-            <h2 class="section-title">Estimated Preparation Time</h2>
-            <div class="est-time">
-                <span class="est-time-icon">⏱️</span>
-                <span class="est-time-text">
-                    Your order will be ready in approximately <span class="est-time-value">{{ $estimatedTime }} minutes</span>
-                </span>
+        <!-- Est Time Card -->
+        <div class="card" id="est-time-card">
+            <div class="est-time-box">
+                <div class="est-time-icon">⏱️</div>
+                <div class="est-time-content">
+                    <div class="est-time-label">Estimated Ready Time</div>
+                    <div class="est-time-value">{{ $estimatedTime }} minutes</div>
+                </div>
             </div>
-            <p style="font-size: 12px; color: #666;">
-                *Estimated time may vary based on current kitchen load
-            </p>
+            <p class="est-time-note">* Estimated time may vary based on current kitchen load</p>
         </div>
 
-        <div class="section">
-            <h2 class="section-title">Special Requests</h2>
-            <textarea id="special-requests" class="notes-area" placeholder="Any special dietary requirements, allergies, or requests?"></textarea>
+        <!-- Special Requests Card -->
+        <div class="card" id="notes-card">
+            <h2 class="card-title">Special Requests</h2>
+            <textarea id="special-requests" class="notes-area" placeholder="Any special dietary requirements, allergies, or specific requests? Let us know and we'll do our best to accommodate."></textarea>
         </div>
     </div>
 
-    <div class="bottom-bar" id="bottom-bar" style="display: none;">
-        <div class="total-summary">
-            <div id="summary-items">0 items</div>
-            <div class="total-amount" id="bottom-total">$0.00</div>
+    <!-- Bottom Bar -->
+    <div class="bottom-bar" id="bottom-bar">
+        <div class="summary-info">
+            <span class="summary-items" id="summary-items">0 items</span>
+            <span class="summary-total" id="bottom-total">$0.00</span>
         </div>
-        <button class="place-order-btn" id="place-order-btn" onclick="placeOrder()">Place Order</button>
+        <button class="place-order-btn" id="place-order-btn" onclick="placeOrder()">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Place Order
+        </button>
     </div>
 
-    <div id="page-data" data-estimated-time="{{ $estimatedTime }}" data-csrf="{{ csrf_token() }}"></div>
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <div class="toast-icon">
+            <svg width="14" height="14" fill="none" stroke="white" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+            </svg>
+        </div>
+        <span id="toast-message">Item added!</span>
+    </div>
 
     <script>
         let cart = [];
-        let estimatedMinutes = parseInt(document.getElementById('page-data').dataset.estimatedTime);
+        let estimatedMinutes = {{ $estimatedTime }};
 
-        // Load cart from sessionStorage
-        function loadCart() {
-            const storedCart = sessionStorage.getItem('cart');
-            if (storedCart) {
-                cart = JSON.parse(storedCart);
+        // Load cart
+        async function loadCart() {
+            try {
+                const response = await fetch('/cart/summary');
+                const data = await response.json();
+                cart = data.cart || [];
+                renderCart();
+            } catch (error) {
+                console.error('Error loading cart:', error);
+                renderCart();
             }
-            renderCart();
         }
 
         function renderCart() {
             const cartItemsDiv = document.getElementById('cart-items');
             const emptyCartDiv = document.getElementById('empty-cart');
             const bottomBar = document.getElementById('bottom-bar');
-            const placeOrderBtn = document.getElementById('place-order-btn');
+            const cartTotalSection = document.getElementById('cart-total-section');
+            const estTimeCard = document.getElementById('est-time-card');
+            const notesCard = document.getElementById('notes-card');
 
             if (cart.length === 0) {
                 cartItemsDiv.innerHTML = '';
+                cartItemsDiv.style.display = 'none';
                 emptyCartDiv.style.display = 'block';
-                bottomBar.style.display = 'none';
+                cartTotalSection.style.display = 'none';
+                estTimeCard.style.display = 'none';
+                notesCard.style.display = 'none';
+                bottomBar.classList.remove('visible');
                 return;
             }
 
+            cartItemsDiv.style.display = 'block';
             emptyCartDiv.style.display = 'none';
-            bottomBar.style.display = 'flex';
+            cartTotalSection.style.display = 'flex';
+            estTimeCard.style.display = 'block';
+            notesCard.style.display = 'block';
+            bottomBar.classList.add('visible');
 
             let html = '';
             let totalPrice = 0;
             let totalItems = 0;
 
             cart.forEach((item, index) => {
-                const itemTotal = item.showPrice ? item.price * item.quantity : 0;
+                const itemTotal = item.show_price ? item.price * item.quantity : 0;
                 totalPrice += itemTotal;
                 totalItems += item.quantity;
 
                 html += `
                     <div class="cart-item">
-                        <div class="item-info">
+                        <div class="item-details">
                             <div class="item-name">${item.name}</div>
-                            <div class="quantity-control">
+                            <div class="item-controls">
                                 <button class="qty-btn" onclick="updateQuantity(${index}, -1)">−</button>
                                 <span class="qty-value">${item.quantity}</span>
                                 <button class="qty-btn" onclick="updateQuantity(${index}, 1)">+</button>
                                 <span class="remove-btn" onclick="removeItem(${index})">Remove</span>
                             </div>
                         </div>
-                        <div class="item-price ${item.showPrice ? '' : 'hidden'}">
-                            ${item.showPrice ? '$' + itemTotal.toFixed(2) : 'Price on request'}
+                        <div class="item-price">
+                            ${item.show_price ? '$' + itemTotal.toFixed(2) : '--'}
                         </div>
                     </div>
                 `;
@@ -310,36 +610,70 @@
             document.getElementById('summary-items').textContent = totalItems + ' item' + (totalItems > 1 ? 's' : '');
         }
 
-        function updateQuantity(index, change) {
-            cart[index].quantity += change;
-            if (cart[index].quantity <= 0) {
-                cart.splice(index, 1);
+        async function updateQuantity(index, change) {
+            const newQuantity = cart[index].quantity + change;
+            if (newQuantity < 1) return;
+            
+            try {
+                const response = await fetch('/cart/update', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        item_id: cart[index].id,
+                        quantity: newQuantity
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    cart = data.cart;
+                    renderCart();
+                }
+            } catch (error) {
+                console.error('Error updating cart:', error);
             }
-            sessionStorage.setItem('cart', JSON.stringify(cart));
-            renderCart();
         }
 
-        function removeItem(index) {
-            cart.splice(index, 1);
-            sessionStorage.setItem('cart', JSON.stringify(cart));
-            renderCart();
+        async function removeItem(index) {
+            try {
+                const response = await fetch('/cart/remove', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        item_id: cart[index].id
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    cart = data.cart;
+                    renderCart();
+                    showToast('Item removed');
+                }
+            } catch (error) {
+                console.error('Error removing item:', error);
+            }
         }
 
         async function placeOrder() {
             const btn = document.getElementById('place-order-btn');
             btn.disabled = true;
-            btn.textContent = 'Placing Order...';
-
+            btn.innerHTML = '<span>Placing...</span>';
+            
             const specialRequests = document.getElementById('special-requests').value;
-            const csrfToken = document.getElementById('page-data').dataset.csrf;
-
+            
             try {
                 const response = await fetch('/checkout', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
                     body: JSON.stringify({
                         items: cart,
@@ -347,35 +681,47 @@
                     })
                 });
 
-                let data;
-                try {
-                    data = await response.json();
-                } catch (e) {
-                    // If not JSON, get text
-                    const text = await response.text();
-                    console.error('Non-JSON response:', text);
-                    throw new Error('Invalid response from server');
-                }
+                const data = await response.json();
 
                 if (response.ok && data.success) {
-                    sessionStorage.removeItem('cart');
                     window.location.href = data.redirect || ('/order-confirmation/' + data.order_id);
                 } else {
-                    console.error('Server error:', data);
-                    alert('Error: ' + (data.error || data.message || 'Please try again.'));
+                    showToast(data.message || 'Error placing order');
                     btn.disabled = false;
-                    btn.textContent = 'Place Order';
+                    btn.innerHTML = `
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Place Order
+                    `;
                 }
-            } catch (err) {
-                console.error('Fetch error:', err);
-                alert('Error placing order: ' + err.message);
+            } catch (error) {
+                console.error('Error placing order:', error);
+                showToast('Error placing order');
                 btn.disabled = false;
-                btn.textContent = 'Place Order';
+                btn.innerHTML = `
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Place Order
+                `;
             }
         }
 
-        // Load cart on page load
-        loadCart();
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toast-message');
+            
+            msgEl.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        // Load on page load
+        document.addEventListener('DOMContentLoaded', loadCart);
     </script>
 </body>
 </html>

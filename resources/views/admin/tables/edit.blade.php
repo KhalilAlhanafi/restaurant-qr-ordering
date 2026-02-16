@@ -27,25 +27,18 @@
                 @enderror
             </div>
             
-            <div class="mb-4">
-                <label for="location" class="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                <input type="text" name="location" id="location" value="{{ old('location', $table->location) }}" placeholder="e.g., Main Hall, Patio, etc."
+            <div class="mb-6">
+                <label for="location" class="block text-sm font-medium text-gray-700 mb-2">Location *</label>
+                <select name="location" id="location" required
                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                @error('location')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-            
-            <div class="mb-4">
-                <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status *</label>
-                <select name="status" id="status" required
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="available" {{ old('status', $table->status) == 'available' ? 'selected' : '' }}>Available</option>
-                    <option value="occupied" {{ old('status', $table->status) == 'occupied' ? 'selected' : '' }}>Occupied</option>
-                    <option value="reserved" {{ old('status', $table->status) == 'reserved' ? 'selected' : '' }}>Reserved</option>
-                    <option value="cleaning" {{ old('status', $table->status) == 'cleaning' ? 'selected' : '' }}>Cleaning</option>
+                    <option value="">Select a location</option>
+                    <option value="indoor" {{ old('location', $table->location) == 'indoor' ? 'selected' : '' }}>Indoor</option>
+                    <option value="outdoor" {{ old('location', $table->location) == 'outdoor' ? 'selected' : '' }}>Outdoor</option>
+                    <option value="balcony" {{ old('location', $table->location) == 'balcony' ? 'selected' : '' }}>Balcony</option>
+                    <option value="second floor" {{ old('location', $table->location) == 'second floor' ? 'selected' : '' }}>Second Floor</option>
+                    <option value="second floor balcony" {{ old('location', $table->location) == 'second floor balcony' ? 'selected' : '' }}>Second Floor Balcony</option>
                 </select>
-                @error('status')
+                @error('location')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
             </div>

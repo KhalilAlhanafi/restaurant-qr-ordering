@@ -53,24 +53,56 @@
                 </div>
             </div>
             
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-3 gap-4">
                 <div class="mb-4">
-                    <label for="start_time" class="block text-sm font-medium text-gray-700 mb-2">Start Time *</label>
-                    <input type="datetime-local" name="start_time" id="start_time" value="{{ old('start_time') }}" required
+                    <label for="month" class="block text-sm font-medium text-gray-700 mb-2">Month *</label>
+                    <select name="month" id="month" required
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    @error('start_time')
+                        <option value="">Select Month</option>
+                        @for($m = 1; $m <= 12; $m++)
+                            <option value="{{ $m }}" {{ old('month') == $m ? 'selected' : '' }}>
+                                {{ date('F', mktime(0, 0, 0, $m, 1)) }}
+                            </option>
+                        @endfor
+                    </select>
+                    @error('month')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
                 
                 <div class="mb-4">
-                    <label for="end_time" class="block text-sm font-medium text-gray-700 mb-2">End Time *</label>
-                    <input type="datetime-local" name="end_time" id="end_time" value="{{ old('end_time') }}" required
+                    <label for="day" class="block text-sm font-medium text-gray-700 mb-2">Day *</label>
+                    <select name="day" id="day" required
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    @error('end_time')
+                        <option value="">Select Day</option>
+                        @for($d = 1; $d <= 31; $d++)
+                            <option value="{{ $d }}" {{ old('day') == $d ? 'selected' : '' }}>
+                                {{ $d }}
+                            </option>
+                        @endfor
+                    </select>
+                    @error('day')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
+                
+                <div class="mb-4">
+                    <label for="start_time" class="block text-sm font-medium text-gray-700 mb-2">Start Time *</label>
+                    <input type="time" name="start_time" id="start_time" value="{{ old('start_time') }}" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    @error('start_time')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label for="end_time" class="block text-sm font-medium text-gray-700 mb-2">End Time *</label>
+                <input type="time" name="end_time" id="end_time" value="{{ old('end_time') }}" required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                @error('end_time')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
             </div>
             
             <div class="mb-4">

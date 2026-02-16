@@ -10,8 +10,9 @@
             
             <div class="mb-4">
                 <label for="table_number" class="block text-sm font-medium text-gray-700 mb-2">Table Number *</label>
-                <input type="text" name="table_number" id="table_number" value="{{ old('table_number') }}" required
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="text" name="table_number" id="table_number" value="{{ $nextTableNumber }}" readonly
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700">
+                <p class="text-sm text-gray-500 mt-1">Table number is automatically assigned</p>
                 @error('table_number')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
@@ -26,25 +27,18 @@
                 @enderror
             </div>
             
-            <div class="mb-4">
-                <label for="location" class="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                <input type="text" name="location" id="location" value="{{ old('location') }}" placeholder="e.g., Main Hall, Patio, etc."
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                @error('location')
-                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
-            </div>
-            
             <div class="mb-6">
-                <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status *</label>
-                <select name="status" id="status" required
+                <label for="location" class="block text-sm font-medium text-gray-700 mb-2">Location *</label>
+                <select name="location" id="location" required
                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="available" {{ old('status') == 'available' ? 'selected' : '' }}>Available</option>
-                    <option value="occupied" {{ old('status') == 'occupied' ? 'selected' : '' }}>Occupied</option>
-                    <option value="reserved" {{ old('status') == 'reserved' ? 'selected' : '' }}>Reserved</option>
-                    <option value="cleaning" {{ old('status') == 'cleaning' ? 'selected' : '' }}>Cleaning</option>
+                    <option value="">Select a location</option>
+                    <option value="indoor" {{ old('location') == 'indoor' ? 'selected' : '' }}>Indoor</option>
+                    <option value="outdoor" {{ old('location') == 'outdoor' ? 'selected' : '' }}>Outdoor</option>
+                    <option value="balcony" {{ old('location') == 'balcony' ? 'selected' : '' }}>Balcony</option>
+                    <option value="second floor" {{ old('location') == 'second floor' ? 'selected' : '' }}>Second Floor</option>
+                    <option value="second floor balcony" {{ old('location') == 'second floor balcony' ? 'selected' : '' }}>Second Floor Balcony</option>
                 </select>
-                @error('status')
+                @error('location')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                 @enderror
             </div>

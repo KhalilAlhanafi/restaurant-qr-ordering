@@ -1,74 +1,80 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Table QR Codes</title>
+@extends('layouts.admin')
+
+@section('title', 'QR Codes')
+@section('header', 'QR Codes')
+
+@section('content')
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-semibold">Restaurant Table QR Codes</h3>
+                    <p class="text-sm text-gray-600 mt-1">
+                        Print these QR codes and place them on the corresponding tables.<br>
+                        Customers can scan these codes to access the menu and place orders.
+                    </p>
+                </div>
+                <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                    Print QR Codes
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                @foreach($tables as $table)
+                <div class="border border-gray-200 rounded-lg p-6 text-center hover:shadow-md transition-shadow">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-4">Table {{ $table->table_number }}</h4>
+                    <div class="qr-code mb-4">
+                        <img src="{{ route('admin.qr-code-image', $table->qr_token) }}" alt="QR Code for Table {{ $table->table_number }}" class="mx-auto rounded-lg shadow-sm" width="180" height="180">
+                    </div>
+                    <div class="table-info text-sm text-gray-600">
+                        <p><strong>Capacity:</strong> {{ $table->capacity }} people</p>
+                        <p><strong>Location:</strong> {{ ucfirst($table->location) }}</p>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background: #f5f5f5;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        .qr-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 30px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .qr-card {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        .qr-card h2 {
-            margin-top: 0;
-            color: #333;
-        }
-        .qr-code {
-            margin: 20px 0;
-        }
-        .table-info {
-            color: #666;
-            margin-top: 15px;
-        }
         @media print {
-            body { background: white; }
-            .qr-card {
+            body { 
+                background: white !important; 
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+            
+            .bg-white {
+                box-shadow: none !important;
+                border: none !important;
+            }
+            
+            .qr-code img {
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+            }
+            
+            .border-gray-200 {
+                border: 1px solid #ddd !important;
                 break-inside: avoid;
-                box-shadow: none;
-                border: 1px solid #ddd;
+            }
+            
+            /* Hide print button and other UI elements */
+            button, .bg-gray-100, header, aside {
+                display: none !important;
+            }
+            
+            /* Ensure proper spacing for print */
+            .grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important;
+                gap: 20px !important;
+            }
+            
+            .border-gray-200 {
+                page-break-inside: avoid;
             }
         }
     </style>
-</head>
-<body>
-    <h1>Restaurant Table QR Codes</h1>
-    <p style="text-align: center; color: #666; margin-bottom: 30px;">
-        Print this page and place the QR codes on the corresponding tables.<br>
-        Customers can scan these codes to access the menu and place orders.
-    </p>
-
-    <div class="qr-grid">
-        @foreach($tables as $table)
-        <div class="qr-card">
-            <h2>Table {{ $table->table_number }}</h2>
-            <div class="qr-code">
-                <img src="{{ route('admin.qr-code-image', $table->qr_token) }}" alt="QR Code" width="200" height="200">
-            </div>
-            <div class="table-info">
-                <p><strong>Capacity:</strong> {{ $table->capacity }} people</p>
-                <p><strong>Location:</strong> {{ $table->location ?? 'Main floor' }}</p>
-            </div>
-        </div>
-        @endforeach
-    </div>
-</body>
-</html>
+@endsection

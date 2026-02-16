@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ItemController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ReservationController;
 use App\Http\Controllers\Admin\TableController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\QRController;
@@ -23,6 +24,26 @@ Route::get('/qr-required', [QRController::class, 'required'])->name('qr.required
 Route::get('/menu', [MenuController::class, 'index'])
     ->middleware('identify.table')
     ->name('menu.index');
+
+// Cart Routes (requires table identification)
+Route::get('/cart', [CartController::class, 'index'])
+    ->middleware('identify.table')
+    ->name('cart.index');
+Route::post('/cart/add', [CartController::class, 'add'])
+    ->middleware('identify.table')
+    ->name('cart.add');
+Route::put('/cart/update', [CartController::class, 'update'])
+    ->middleware('identify.table')
+    ->name('cart.update');
+Route::delete('/cart/remove', [CartController::class, 'remove'])
+    ->middleware('identify.table')
+    ->name('cart.remove');
+Route::delete('/cart/clear', [CartController::class, 'clear'])
+    ->middleware('identify.table')
+    ->name('cart.clear');
+Route::get('/cart/summary', [CartController::class, 'summary'])
+    ->middleware('identify.table')
+    ->name('cart.summary');
 
 // Checkout Routes (requires table identification)
 Route::get('/checkout', [CheckoutController::class, 'index'])

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\OrderPlaced;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -125,6 +126,9 @@ class CheckoutController extends Controller
         // Clear cart from session
         session()->forget('cart');
 
+        // Broadcast the order placed event
+        broadcast(new OrderPlaced($order, !isset($existingOrder)));
+
         // Always return JSON since request comes from JavaScript fetch
         return response()->json([
             'success' => true,
@@ -147,6 +151,7 @@ class CheckoutController extends Controller
 
         if ($order) {
             $order->update(['is_checked_out' => true]);
+            $order->touch(); // Force update the timestamp to trigger polling
             return redirect()->route('order.confirmation', $order)
                 ->with('success', 'Order finalized! Thank you for dining with us.');
         }

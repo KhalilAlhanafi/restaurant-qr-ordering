@@ -65,16 +65,33 @@
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
-                
+
                 <div class="mb-4">
-                    <label for="preparation_time" class="block text-sm font-medium text-gray-700 mb-2">Prep Time (min)</label>
-                    <input type="number" name="preparation_time" id="preparation_time" value="{{ old('preparation_time', 15) }}" min="1"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    @error('preparation_time')
+                    <label for="old_price" class="block text-sm font-medium text-gray-700 mb-2">Old Price</label>
+                    <input type="number" name="old_price" id="old_price" value="{{ old('old_price') }}" step="0.01" min="0" readonly
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-gray-500 mt-1">Auto-calculated (Price × 100)</p>
+                    @error('old_price')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
+
+            <div class="mb-4">
+                <label for="preparation_time" class="block text-sm font-medium text-gray-700 mb-2">Prep Time (min)</label>
+                <input type="number" name="preparation_time" id="preparation_time" value="{{ old('preparation_time', 15) }}" min="1"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                @error('preparation_time')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <script>
+                document.getElementById('price').addEventListener('input', function() {
+                    const price = parseFloat(this.value) || 0;
+                    document.getElementById('old_price').value = price * 100;
+                });
+            </script>
             
             <div class="mb-4">
                 <label for="image" class="block text-sm font-medium text-gray-700 mb-2">Image</label>

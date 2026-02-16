@@ -31,11 +31,35 @@ class ReservationController extends Controller
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'nullable|string|max:50',
             'party_size' => 'required|integer|min:1',
-            'start_time' => 'required|date|after:now',
-            'end_time' => 'required|date|after:start_time',
+            'month' => 'required|integer|min:1|max:12',
+            'day' => 'required|integer|min:1|max:31',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i|after:start_time',
             'special_requests' => 'nullable|string',
             'status' => 'required|in:pending,confirmed,cancelled,completed',
         ]);
+
+        // Build datetime objects from month, day, and time
+        $currentYear = date('Y');
+        $startDateTime = Carbon::create($currentYear, $validated['month'], $validated['day'], 
+            explode(':', $validated['start_time'])[0], explode(':', $validated['start_time'])[1], 0);
+        $endDateTime = Carbon::create($currentYear, $validated['month'], $validated['day'], 
+            explode(':', $validated['end_time'])[0], explode(':', $validated['end_time'])[1], 0);
+
+        // If end time is earlier than start time, assume it's the next day
+        if ($endDateTime->lt($startDateTime)) {
+            $endDateTime->addDay();
+        }
+
+        // Check if the reservation is in the past
+        if ($startDateTime->lt(Carbon::now())) {
+            return redirect()->back()->withErrors(['start_time' => 'Reservation time cannot be in the past.'])->withInput();
+        }
+
+        // Replace the separate fields with datetime objects
+        unset($validated['month'], $validated['day']);
+        $validated['start_time'] = $startDateTime;
+        $validated['end_time'] = $endDateTime;
 
         // Check for overlapping reservations
         $overlapping = Reservation::where('table_id', $validated['table_id'])
@@ -71,11 +95,30 @@ class ReservationController extends Controller
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'nullable|string|max:50',
             'party_size' => 'required|integer|min:1',
-            'start_time' => 'required|date',
-            'end_time' => 'required|date|after:start_time',
+            'month' => 'required|integer|min:1|max:12',
+            'day' => 'required|integer|min:1|max:31',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i|after:start_time',
             'special_requests' => 'nullable|string',
             'status' => 'required|in:pending,confirmed,cancelled,completed',
         ]);
+
+        // Build datetime objects from month, day, and time
+        $currentYear = date('Y');
+        $startDateTime = Carbon::create($currentYear, $validated['month'], $validated['day'], 
+            explode(':', $validated['start_time'])[0], explode(':', $validated['start_time'])[1], 0);
+        $endDateTime = Carbon::create($currentYear, $validated['month'], $validated['day'], 
+            explode(':', $validated['end_time'])[0], explode(':', $validated['end_time'])[1], 0);
+
+        // If end time is earlier than start time, assume it's the next day
+        if ($endDateTime->lt($startDateTime)) {
+            $endDateTime->addDay();
+        }
+
+        // Replace the separate fields with datetime objects
+        unset($validated['month'], $validated['day']);
+        $validated['start_time'] = $startDateTime;
+        $validated['end_time'] = $endDateTime;
 
         // Check for overlapping reservations (excluding current reservation)
         $overlapping = Reservation::where('table_id', $validated['table_id'])
@@ -105,19 +148,39 @@ class ReservationController extends Controller
         return redirect()->route('admin.reservations.index')->with('success', 'Reservation deleted successfully');
     }
 
-    public function timeline()
+    public function timeline(Request $request)
     {
+        $request->validate([
+            'month' => 'nullable|integer|min:1|max:12',
+            'week' => 'nullable|integer|min:1|max:5',
+        ]);
+
         $tables = RestaurantTable::all();
-        $today = Carbon::today();
-        $weekEnd = Carbon::today()->addDays(7);
+        
+        // Default to current month and week if not provided
+        $currentMonth = $request->input('month', Carbon::now()->month);
+        $currentWeek = $request->input('week', Carbon::now()->weekOfMonth);
+        
+        // Calculate the start and end dates for the selected week
+        $year = Carbon::now()->year;
+        $firstDayOfMonth = Carbon::create($year, $currentMonth, 1);
+        
+        // Calculate the start of the selected week
+        $weekStart = $firstDayOfMonth->copy()->addWeeks($currentWeek - 1);
+        if ($currentWeek > 1) {
+            $weekStart->startOfWeek(Carbon::MONDAY);
+        }
+        
+        // Calculate the end of the selected week (7 days)
+        $weekEnd = $weekStart->copy()->addDays(6)->endOfDay();
 
         $reservations = Reservation::with('table')
-            ->where('start_time', '>=', $today)
-            ->where('start_time', '<', $weekEnd)
+            ->where('start_time', '>=', $weekStart)
+            ->where('start_time', '<=', $weekEnd)
             ->where('status', '!=', 'cancelled')
             ->orderBy('start_time')
             ->get();
 
-        return view('admin.reservations.timeline', compact('tables', 'reservations', 'today', 'weekEnd'));
+        return view('admin.reservations.timeline', compact('tables', 'reservations', 'weekStart', 'weekEnd', 'currentMonth', 'currentWeek'));
     }
 }

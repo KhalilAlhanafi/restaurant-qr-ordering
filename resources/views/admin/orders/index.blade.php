@@ -178,6 +178,20 @@
             }, 5000);
         }
 
+        function showCheckoutNotification(order) {
+            const alert = document.getElementById('new-order-alert');
+            const details = document.getElementById('new-order-details');
+            alert.style.background = '#28a745'; // Green for checkout
+            details.textContent = `Table ${order.table_number} - Order Checked Out! Ready for payment`;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+                // Reset to original color
+                alert.style.background = '#28a745';
+            }, 5000);
+        }
+
         function createOrderRow(order) {
             const isCheckedOut = order.is_checked_out;
             const typeBadge = isCheckedOut 
@@ -192,7 +206,7 @@
                 ? `<span class="new-items-badge" title="${order.unseen_items_count} new items">${order.unseen_items_count}</span>`
                 : '';
             
-            const rowClass = order.is_new ? 'new-order-row' : (isCheckedOut ? 'bg-green-50' : '');
+            let rowClass = order.is_new ? 'new-order-row' : (isCheckedOut ? 'bg-green-50' : '');
             if (order.unseen_items_count > 0) {
                 rowClass += ' has-unseen-updates';
             }
@@ -255,20 +269,49 @@
             statusCell.className = `px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[order.status] || 'bg-gray-100 text-gray-800'}`;
             statusCell.textContent = order.status.charAt(0).toUpperCase() + order.status.slice(1);
             
-            // Update type (checked out status)
+            // Update type (checked out status) - this is the key part
             const typeCell = row.querySelector('.type-cell');
             const actionCell = row.querySelector('td:last-child');
+            const orderNumberCell = row.querySelector('td:first-child');
+            
             if (order.is_checked_out) {
+                // Update to checked out state
                 typeCell.innerHTML = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">✓ Checked Out</span>';
                 row.classList.add('bg-green-50');
+                
+                // Remove Active badge if it exists
+                const activeBadge = orderNumberCell.querySelector('.bg-yellow-100');
+                if (activeBadge) {
+                    activeBadge.remove();
+                }
+                
                 // Add End Service button if not already present
                 if (!actionCell.querySelector('button')) {
                     actionCell.insertAdjacentHTML('beforeend', `<button onclick="endService(${order.id}, this)" class="ml-2 text-red-600 hover:text-red-900 font-semibold">End Service</button>`);
                 }
+                
+                // Show notification for checkout
+                if (order.was_updated && !order.is_new) {
+                    showCheckoutNotification(order);
+                }
+            } else {
+                // Update to open state
+                typeCell.innerHTML = '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Open (Adding Items)</span>';
+                row.classList.remove('bg-green-50');
+                
+                // Add Active badge if not present
+                if (!orderNumberCell.querySelector('.bg-yellow-100')) {
+                    orderNumberCell.insertAdjacentHTML('beforeend', '<span class="ml-2 px-2 py-0.5 text-xs bg-yellow-100 text-yellow-800 rounded-full">Active</span>');
+                }
+                
+                // Remove End Service button if present
+                const endServiceBtn = actionCell.querySelector('button');
+                if (endServiceBtn) {
+                    endServiceBtn.remove();
+                }
             }
             
             // Update or remove unseen items badge
-            const orderNumberCell = row.querySelector('td:first-child');
             let existingBadge = orderNumberCell.querySelector('.new-items-badge');
             
             if (order.unseen_items_count > 0) {
@@ -276,8 +319,11 @@
                     orderNumberCell.insertAdjacentHTML('beforeend', 
                         `<span class="new-items-badge" title="${order.unseen_items_count} new items">${order.unseen_items_count}</span>`);
                 } else {
-                    existingBadge.textContent = order.unseen_items_count;
-                    existingBadge.title = `${order.unseen_items_count} new items`;
+                    const currentCount = parseInt(existingBadge.textContent);
+                    if (currentCount !== order.unseen_items_count) {
+                        existingBadge.textContent = order.unseen_items_count;
+                        existingBadge.title = `${order.unseen_items_count} new items`;
+                    }
                 }
                 row.classList.add('has-unseen-updates');
             } else {
@@ -288,45 +334,72 @@
             }
         }
     
+        // WebSocket removed for simplicity - using polling only
+        // Polling runs every 3 seconds for new orders
+        
         async function checkForNewOrders() {
             try {
-                console.log('Polling... lastMaxId:', lastMaxId, 'knownOrders:', Array.from(knownOrderIds));
+                console.log('Polling... lastMaxId:', lastMaxId, 'lastUpdate:', lastUpdateTime, 'knownOrders:', Array.from(knownOrderIds));
                 const response = await fetch(`/admin/orders/recent?since=${lastMaxId}&last_update=${encodeURIComponent(lastUpdateTime)}`);
                 const data = await response.json();
-                console.log('Got', data.orders.length, 'orders:', data.orders.map(o => ({id: o.id, status: o.status, checked_out: o.is_checked_out})));
+                console.log('Got', data.orders.length, 'orders:', data.orders.map(o => ({id: o.id, status: o.status, checked_out: o.is_checked_out, was_updated: o.was_updated, unseen: o.unseen_items_count})));
                 
                 if (data.orders && data.orders.length > 0) {
                     const tbody = document.getElementById('orders-tbody');
                     const noOrdersRow = document.getElementById('no-orders');
                     
+                    // Always remove "no orders" row when we have any orders
                     if (noOrdersRow) {
                         noOrdersRow.remove();
+                        console.log('Removed "no orders" row');
                     }
                     
-                    let hasChanges = false;
-                    
                     data.orders.forEach(order => {
-                        if (!knownOrderIds.has(order.id)) {
-                            // Brand new order
+                        const existingRow = document.getElementById(`order-${order.id}`);
+                        
+                        if (!existingRow) {
+                            // Brand new order - ALWAYS add if not in DOM
+                            console.log('New order detected:', order.id);
                             const rowHtml = createOrderRow(order);
                             tbody.insertAdjacentHTML('afterbegin', rowHtml);
                             knownOrderIds.add(order.id);
-                            hasChanges = true;
                             showNotification(order);
                         } else {
-                            // Always update existing orders that are returned
-                            updateExistingRow(order);
-                            hasChanges = true;
+                            // Existing order - check for any changes
+                            const currentCheckedOut = existingRow.querySelector('.type-cell').textContent.includes('Checked Out');
+                            const currentUnseenCount = existingRow.querySelector('.new-items-badge');
+                            const hasUnseenChanges = order.unseen_items_count !== (currentUnseenCount ? parseInt(currentUnseenCount.textContent) : 0);
+                            
+                            const needsUpdate = order.is_checked_out !== currentCheckedOut || 
+                                              order.was_updated || 
+                                              hasUnseenChanges;
+                            
+                            console.log('Order check:', order.id, {
+                                exists: true,
+                                checked_out: {from: currentCheckedOut, to: order.is_checked_out},
+                                unseen: {from: currentUnseenCount?.textContent, to: order.unseen_items_count},
+                                was_updated: order.was_updated,
+                                needs_update: needsUpdate
+                            });
+                            
+                            if (needsUpdate) {
+                                updateExistingRow(order);
+                                
+                                // Show checkout notification specifically
+                                if (order.is_checked_out && !currentCheckedOut) {
+                                    showCheckoutNotification(order);
+                                }
+                            }
                         }
                     });
                     
-                    if (hasChanges) {
-                        lastMaxId = data.max_id;
-                        lastUpdateTime = data.timestamp;
-                    }
+                    // Update tracking
+                    lastMaxId = data.max_id;
+                    lastUpdateTime = data.timestamp;
+                    console.log('Updated tracking - maxId:', lastMaxId, 'timestamp:', lastUpdateTime);
                 }
                 
-                // Always update the timestamp for next poll
+                // Always update timestamp for next poll
                 if (data.timestamp) {
                     lastUpdateTime = data.timestamp;
                 }
@@ -369,8 +442,36 @@
             }
         }
 
-        // Poll every 2 seconds for more responsiveness
-        setInterval(checkForNewOrders, 2000);
+        // Check for new orders every 3 seconds (simple polling, no WebSocket needed)
+        setInterval(checkForNewOrders, 3000);
         checkForNewOrders();
+        
+        // Listen for storage events to sync across tabs
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'orderSeenUpdated') {
+                const data = JSON.parse(e.newValue);
+                console.log('Storage event - updating order:', data.orderId, 'seen items:', data.seenItems);
+                updateOrderSeenStatus(data.orderId, data.seenItems);
+            }
+        });
+        
+        // Function to update order seen status
+        function updateOrderSeenStatus(orderId, seenItemsCount) {
+            const row = document.getElementById(`order-${orderId}`);
+            if (row) {
+                const orderNumberCell = row.querySelector('td:first-child');
+                const existingBadge = orderNumberCell.querySelector('.new-items-badge');
+                
+                if (existingBadge && seenItemsCount === 0) {
+                    // Remove badge if all items are seen
+                    existingBadge.remove();
+                    row.classList.remove('has-unseen-updates');
+                } else if (existingBadge && seenItemsCount > 0) {
+                    // Update badge count
+                    existingBadge.textContent = seenItemsCount;
+                    existingBadge.title = `${seenItemsCount} new items`;
+                }
+            }
+        }
     </script>
 @endsection

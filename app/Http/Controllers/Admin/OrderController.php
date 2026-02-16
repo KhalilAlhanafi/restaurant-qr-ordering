@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\OrderPlaced;
+use App\Events\OrderStatusUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\Item;
 use App\Models\Order;
@@ -24,12 +26,14 @@ class OrderController extends Controller
         $since = $request->query('since', 0);
         $lastUpdate = $request->query('last_update', '1970-01-01');
         
+        // Get all active orders - include everything that's not completed/cancelled
         $orders = Order::with(['table', 'orderItems.item'])
             ->whereNotIn('status', ['completed', 'cancelled'])
             ->where(function($query) use ($since, $lastUpdate) {
                 $query->where('id', '>', $since)
                       ->orWhere('updated_at', '>', $lastUpdate);
             })
+            ->orderBy('updated_at', 'desc')
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($order) use ($lastUpdate) {
@@ -116,7 +120,11 @@ class OrderController extends Controller
             'status' => 'required|in:pending,preparing,ready,served,completed,cancelled',
         ]);
 
+        $previousStatus = $order->status;
         $order->update($validated);
+
+        // Broadcast status update event
+        broadcast(new OrderStatusUpdated($order, $previousStatus));
 
         // Update table status if order is completed or cancelled
         if (in_array($validated['status'], ['completed', 'cancelled'])) {
@@ -180,14 +188,22 @@ class OrderController extends Controller
         $order->touch(); // Update the updated_at timestamp
         $order->save();
 
+        // Broadcast order update event (as items were added)
+        broadcast(new OrderPlaced($order, false));
+
         return redirect()->route('admin.orders.show', $order)
             ->with('success', 'Items added to order successfully');
     }
 
     public function endService(Order $order)
     {
+        $previousStatus = $order->status;
+        
         // Mark order as completed
         $order->update(['status' => 'completed', 'completed_at' => now()]);
+        
+        // Broadcast status update event
+        broadcast(new OrderStatusUpdated($order, $previousStatus));
         
         // Set table back to available
         if ($order->table) {

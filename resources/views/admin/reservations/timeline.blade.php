@@ -10,6 +10,39 @@
         </a>
     </div>
 
+    <!-- Filter Controls -->
+    <div class="bg-white shadow rounded-lg p-6 mb-6">
+        <form method="GET" action="{{ route('admin.reservations.timeline') }}" class="flex flex-wrap gap-4 items-end">
+            <div>
+                <label for="month" class="block text-sm font-medium text-gray-700 mb-2">Month</label>
+                <select name="month" id="month" onchange="this.form.submit()"
+                    class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    @for($m = 1; $m <= 12; $m++)
+                        <option value="{{ $m }}" {{ $currentMonth == $m ? 'selected' : '' }}>
+                            {{ date('F', mktime(0, 0, 0, $m, 1)) }}
+                        </option>
+                    @endfor
+                </select>
+            </div>
+            
+            <div>
+                <label for="week" class="block text-sm font-medium text-gray-700 mb-2">Week of Month</label>
+                <select name="week" id="week" onchange="this.form.submit()"
+                    class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    @for($w = 1; $w <= 5; $w++)
+                        <option value="{{ $w }}" {{ $currentWeek == $w ? 'selected' : '' }}>
+                            Week {{ $w }}
+                        </option>
+                    @endfor
+                </select>
+            </div>
+            
+            <div class="text-sm text-gray-600">
+                <strong>Showing:</strong> {{ $weekStart->format('M j') }} - {{ $weekEnd->format('M j, Y') }}
+            </div>
+        </form>
+    </div>
+
     <!-- Timeline Legend -->
     <div class="flex flex-wrap gap-4 mb-6 bg-white p-4 rounded-lg shadow">
         <div class="flex items-center"><span class="w-4 h-4 bg-yellow-100 border border-yellow-400 rounded mr-2"></span> Pending</div>
@@ -25,7 +58,7 @@
             <div class="flex border-b">
                 <div class="w-32 p-4 font-semibold border-r bg-gray-50 shrink-0">Table</div>
                 @for($i = 0; $i < 7; $i++)
-                    @php $date = $today->copy()->addDays($i) @endphp
+                    @php $date = $weekStart->copy()->addDays($i) @endphp
                     <div class="flex-1 p-4 text-center border-r {{ $date->isToday() ? 'bg-blue-50' : 'bg-gray-50' }} min-w-[150px]">
                         <div class="font-semibold">{{ $date->format('D') }}</div>
                         <div class="text-sm text-gray-500">{{ $date->format('M d') }}</div>
@@ -43,7 +76,7 @@
                     
                     @for($i = 0; $i < 7; $i++)
                         @php 
-                            $date = $today->copy()->addDays($i);
+                            $date = $weekStart->copy()->addDays($i);
                             $dayReservations = $reservations->where('table_id', $table->id)
                                 ->filter(function($r) use ($date) {
                                     return $r->start_time->isSameDay($date);

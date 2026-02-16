@@ -232,6 +232,19 @@
 
                 // Update counts
                 updateUnseenCounts();
+                
+                // Trigger storage event to update main orders list
+                const remainingUnseen = document.querySelectorAll('[data-is-unseen="true"]').length;
+                localStorage.setItem('orderSeenUpdated', JSON.stringify({
+                    orderId: orderId,
+                    seenItems: remainingUnseen,
+                    timestamp: Date.now()
+                }));
+                
+                // Remove the storage item after a short delay
+                setTimeout(() => {
+                    localStorage.removeItem('orderSeenUpdated');
+                }, 100);
             } else {
                 const errorText = await response.text();
                 console.error('Server error:', response.status, errorText);
@@ -420,6 +433,18 @@
                 if (banner) banner.remove();
                 const unseenBadge = document.getElementById('unseen-badge');
                 if (unseenBadge) unseenBadge.remove();
+                
+                // Trigger storage event to update main orders list
+                localStorage.setItem('orderSeenUpdated', JSON.stringify({
+                    orderId: orderId,
+                    seenItems: 0,
+                    timestamp: Date.now()
+                }));
+                
+                // Remove the storage item after a short delay to prevent re-triggering
+                setTimeout(() => {
+                    localStorage.removeItem('orderSeenUpdated');
+                }, 100);
             }
         } catch (error) {
             console.error('Error marking all as seen:', error);

@@ -18,7 +18,11 @@ class TableController extends Controller
 
     public function create()
     {
-        return view('admin.tables.create');
+        // Get the next table number
+        $lastTable = RestaurantTable::orderBy('table_number', 'desc')->first();
+        $nextTableNumber = $lastTable ? ((int) $lastTable->table_number) + 1 : 1;
+        
+        return view('admin.tables.create', compact('nextTableNumber'));
     }
 
     public function store(Request $request)
@@ -26,12 +30,13 @@ class TableController extends Controller
         $validated = $request->validate([
             'table_number' => 'required|string|unique:restaurant_tables',
             'capacity' => 'required|integer|min:1',
-            'location' => 'nullable|string',
-            'status' => 'required|in:available,occupied,reserved,cleaning',
+            'location' => 'required|in:indoor,outdoor,balcony,second floor,second floor balcony',
         ]);
 
         // Generate unique QR token
         $validated['qr_token'] = bin2hex(random_bytes(8));
+        // Set default status to available
+        $validated['status'] = 'available';
 
         RestaurantTable::create($validated);
         return redirect()->route('admin.tables.index')->with('success', 'Table created successfully');
@@ -47,8 +52,7 @@ class TableController extends Controller
         $validated = $request->validate([
             'table_number' => 'required|string|unique:restaurant_tables,table_number,' . $table->id,
             'capacity' => 'required|integer|min:1',
-            'location' => 'nullable|string',
-            'status' => 'required|in:available,occupied,reserved,cleaning',
+            'location' => 'required|in:indoor,outdoor,balcony,second floor,second floor balcony',
         ]);
 
         $table->update($validated);
