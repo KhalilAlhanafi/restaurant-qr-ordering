@@ -44,7 +44,7 @@ class ItemController extends Controller
         }
 
         Item::create($validated);
-        return redirect()->route('admin.items.index')->with('success', 'Item created successfully');
+        return redirect()->route('admin.categories.show', $validated['category_id'])->with('success', 'Item created successfully');
     }
 
     public function edit(Item $item)
@@ -77,15 +77,16 @@ class ItemController extends Controller
         }
 
         $item->update($validated);
-        return redirect()->route('admin.items.index')->with('success', 'Item updated successfully');
+        return redirect()->route('admin.categories.show', $validated['category_id'])->with('success', 'Item updated successfully');
     }
 
     public function destroy(Item $item)
     {
+        $categoryId = $item->category_id;
         if ($item->image) {
             Storage::disk('public')->delete($item->image);
         }
         $item->delete();
-        return redirect()->route('admin.items.index')->with('success', 'Item deleted successfully');
+        return redirect()->route('admin.categories.show', $categoryId)->with('success', 'Item deleted successfully');
     }
 }

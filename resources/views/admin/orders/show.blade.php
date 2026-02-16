@@ -1,19 +1,29 @@
 @extends('layouts.admin')
 
 @section('title', 'Order Details')
-@section('header', 'Order #{{ $order->id }}')
 
 @section('content')
+    <!-- Breadcrumb -->
+    <div class="mb-6">
+        <div class="flex items-center gap-2 text-sm text-gray-500">
+            <a href="{{ route('admin.orders.index') }}" class="hover:text-amber-500 transition-colors">Orders</a>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+            <span class="text-gray-400">Order #{{ $order->id }}</span>
+        </div>
+    </div>
+
     <!-- New Items Alert Banner -->
     @if ($order->hasUnseenUpdates())
-        <div id="new-items-banner" class="bg-red-100 border-l-4 border-red-500 p-4 mb-4">
+        <div id="new-items-banner" class="bg-amber-500/10 border-l-4 border-amber-500 p-4 mb-6">
             <div class="flex justify-between items-center">
                 <div>
-                    <span class="font-bold text-red-800">🔴 New items added to this order!</span>
-                    <span class="text-sm text-red-600 ml-2">{{ $order->unseenItemsCount() }} item(s) waiting to be
+                    <span class="font-bold text-amber-500">🔴 New items added to this order!</span>
+                    <span class="text-sm text-amber-400 ml-2">{{ $order->unseenItemsCount() }} item(s) waiting to be
                         acknowledged</span>
                 </div>
-                <button id="mark-all-seen-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-medium"
+                <button id="mark-all-seen-btn" class="bg-amber-500 hover:bg-amber-600 text-[#0a0a0a] px-4 py-2 rounded font-medium"
                     onclick="markAllAsSeen()">
                     ✓ Mark All as Seen
                 </button>
@@ -24,7 +34,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Order Details -->
         <div class="lg:col-span-2">
-            <div class="bg-white shadow rounded-lg p-6 mb-6">
+            <div class="bg-[#1a1a1a] border border-gray-800 rounded-xl p-6 mb-6">
                 <div class="flex justify-between items-start mb-4">
                     <div>
                         <p class="text-sm text-gray-500">Table {{ $order->table->table_number ?? 'N/A' }}</p>
@@ -33,16 +43,16 @@
                     <div class="flex gap-2 items-center">
                         @if ($order->hasUnseenUpdates())
                             <span id="unseen-badge"
-                                class="px-3 py-1 text-sm font-semibold rounded-full bg-red-100 text-red-800 animate-pulse">
+                                class="px-3 py-1 text-sm font-semibold rounded-full bg-amber-500/10 text-amber-500 animate-pulse">
                                 🔴 {{ $order->unseenItemsCount() }} New
                             </span>
                         @endif
                         <a href="{{ route('admin.orders.add-items', $order) }}"
-                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium">
+                            class="bg-green-500 hover:bg-green-600 text-[#0a0a0a] px-4 py-2 rounded text-sm font-medium">
                             + Add Items
                         </a>
                         <button onclick="printOrder('receipt')"
-                            class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded text-sm font-medium flex items-center gap-2">
+                            class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm font-medium flex items-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
@@ -51,7 +61,7 @@
                             Receipt
                         </button>
                         <button onclick="printOrder('kitchen')"
-                            class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded text-sm font-medium flex items-center gap-2">
+                            class="bg-orange-500 hover:bg-orange-600 text-[#0a0a0a] px-4 py-2 rounded text-sm font-medium flex items-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -60,40 +70,40 @@
                         </button>
                         @php
                             $statusColors = [
-                                'pending' => 'bg-yellow-100 text-yellow-800',
-                                'preparing' => 'bg-orange-100 text-orange-800',
-                                'ready' => 'bg-blue-100 text-blue-800',
-                                'served' => 'bg-purple-100 text-purple-800',
-                                'completed' => 'bg-green-100 text-green-800',
-                                'cancelled' => 'bg-red-100 text-red-800',
+                                'pending' => 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+                                'preparing' => 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+                                'ready' => 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+                                'served' => 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+                                'completed' => 'bg-green-500/10 text-green-400 border-green-500/20',
+                                'cancelled' => 'bg-red-500/10 text-red-400 border-red-500/20',
                             ];
                         @endphp
                         <span
-                            class="px-3 py-1 text-sm font-semibold rounded-full {{ $statusColors[$order->status] ?? 'bg-gray-100 text-gray-800' }}">
+                            class="px-3 py-1 text-sm font-semibold rounded-full border {{ $statusColors[$order->status] ?? 'bg-gray-500/10 text-gray-400 border-gray-500/20' }}">
                             {{ ucfirst($order->status) }}
                         </span>
                     </div>
                 </div>
 
-                <h3 class="font-semibold mb-3">Order Items</h3>
+                <h3 class="font-semibold text-white mb-3">Order Items</h3>
                 <table class="w-full">
-                    <thead class="border-b">
+                    <thead class="border-b border-gray-700">
                         <tr>
-                            <th class="text-left py-2">Item</th>
-                            <th class="text-center py-2">Qty</th>
-                            <th class="text-right py-2">Price</th>
-                            <th class="text-right py-2">Subtotal</th>
-                            <th class="text-center py-2">Action</th>
+                            <th class="text-left py-2 text-gray-400">Item</th>
+                            <th class="text-center py-2 text-gray-400">Qty</th>
+                            <th class="text-right py-2 text-gray-400">Price</th>
+                            <th class="text-right py-2 text-gray-400">Subtotal</th>
+                            <th class="text-center py-2 text-gray-400">Action</th>
                         </tr>
                     </thead>
                     <tbody id="order-items-tbody">
                         @foreach ($order->orderItems as $orderItem)
                             <tr id="item-row-{{ $orderItem->id }}"
-                                class="border-b order-item-row {{ $orderItem->admin_seen_at ? '' : 'new-item-highlight' }}"
+                                class="border-b border-gray-700 order-item-row {{ $orderItem->admin_seen_at ? '' : 'new-item-highlight' }}"
                                 data-item-id="{{ $orderItem->id }}"
                                 data-is-unseen="{{ $orderItem->admin_seen_at ? 'false' : 'true' }}">
                                 <td class="py-3">
-                                    <div class="font-medium">{{ $orderItem->item->name ?? 'N/A' }}</div>
+                                    <div class="font-medium text-white">{{ $orderItem->item->name ?? 'N/A' }}</div>
                                     @if ($orderItem->special_instructions)
                                         <div class="text-xs text-gray-500">Note: {{ $orderItem->special_instructions }}
                                         </div>
@@ -102,19 +112,19 @@
                                         <span class="new-item-badge">NEW</span>
                                     @endif
                                 </td>
-                                <td class="text-center py-3">{{ $orderItem->quantity }}</td>
-                                <td class="text-right py-3">${{ number_format($orderItem->unit_price, 2) }}</td>
-                                <td class="text-right py-3 font-medium">${{ number_format($orderItem->subtotal, 2) }}</td>
+                                <td class="text-center py-3 text-gray-300">{{ $orderItem->quantity }}</td>
+                                <td class="text-right py-3 text-gray-300">${{ number_format($orderItem->unit_price, 2) }}</td>
+                                <td class="text-right py-3 font-medium text-amber-500">${{ number_format($orderItem->subtotal, 2) }}</td>
                                 <td class="text-center py-3">
                                     @if (!$orderItem->admin_seen_at)
                                         <button
-                                            class="mark-item-seen-btn bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-medium"
+                                            class="mark-item-seen-btn bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-medium"
                                             data-item-id="{{ $orderItem->id }}"
                                             onclick="markItemAsSeen({{ $orderItem->id }}, this)">
                                             ✓ Check
                                         </button>
                                     @else
-                                        <span class="text-green-600">✓</span>
+                                        <span class="text-green-500">✓</span>
                                     @endif
                                 </td>
                             </tr>
@@ -122,8 +132,27 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="4" class="text-right py-3 font-semibold">Total:</td>
-                            <td class="text-right py-3 font-bold text-lg">${{ number_format($order->total_amount, 2) }}
+                            <td colspan="4" class="text-right py-3 font-semibold text-white">Subtotal:</td>
+                            <td class="text-right py-3 font-medium text-gray-300">
+                                ${{ number_format($order->orderItems->sum('subtotal'), 2) }}
+                            </td>
+                        </tr>
+                        @if ($order->taxes->count() > 0)
+                            @foreach ($order->taxes as $tax)
+                                <tr>
+                                    <td colspan="4" class="text-right py-2 text-sm text-gray-400">
+                                        {{ $tax->title }}
+                                        {{ $tax->type === 'percentage' ? '(' . $tax->value . '%)' : '' }}
+                                    </td>
+                                    <td class="text-right py-2 text-sm text-amber-400">
+                                        ${{ number_format($tax->pivot->tax_amount, 2) }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @endif
+                        <tr class="border-t-2 border-gray-600">
+                            <td colspan="4" class="text-right py-3 font-semibold text-white">Total:</td>
+                            <td class="text-right py-3 font-bold text-lg text-amber-500">${{ number_format($order->total_amount, 2) }}
                             </td>
                         </tr>
                     </tfoot>
@@ -131,13 +160,13 @@
             </div>
 
             <!-- Update Status -->
-            <div class="bg-white shadow rounded-lg p-6">
-                <h3 class="font-semibold mb-4">Update Order Status</h3>
+            <div class="bg-[#1a1a1a] border border-gray-800 rounded-xl p-6">
+                <h3 class="font-semibold text-white mb-4">Update Order Status</h3>
                 <form action="{{ route('admin.orders.update-status', $order) }}" method="POST" class="flex gap-2">
                     @csrf
                     @method('PUT')
                     <select name="status"
-                        class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        class="px-4 py-2 bg-[#0f0f0f] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-amber-500/50">
                         <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>Pending</option>
                         <option value="preparing" {{ $order->status == 'preparing' ? 'selected' : '' }}>Preparing</option>
                         <option value="ready" {{ $order->status == 'ready' ? 'selected' : '' }}>Ready</option>
@@ -145,7 +174,7 @@
                         <option value="completed" {{ $order->status == 'completed' ? 'selected' : '' }}>Completed</option>
                         <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                     </select>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded">
+                    <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-[#0a0a0a] font-semibold py-2 px-4 rounded">
                         Update Status
                     </button>
                 </form>
@@ -154,42 +183,48 @@
 
         <!-- Customer Info -->
         <div>
-            <div class="bg-white shadow rounded-lg p-6">
-                <h3 class="font-semibold mb-4">Customer Information</h3>
+            <div class="bg-[#1a1a1a] border border-gray-800 rounded-xl p-6">
+                <h3 class="font-semibold text-white mb-4">Customer Information</h3>
                 <div class="space-y-3">
                     <div>
                         <p class="text-sm text-gray-500">Name</p>
-                        <p class="font-medium">{{ $order->customer_name ?? 'N/A' }}</p>
+                        <p class="font-medium text-white">{{ $order->customer_name ?? 'N/A' }}</p>
                     </div>
                     <div>
                         <p class="text-sm text-gray-500">Phone</p>
-                        <p class="font-medium">{{ $order->customer_phone ?? 'N/A' }}</p>
+                        <p class="font-medium text-white">{{ $order->customer_phone ?? 'N/A' }}</p>
                     </div>
+                    @if ($order->special_requests)
+                        <div>
+                            <p class="text-sm text-gray-500">Special Requests</p>
+                            <p class="font-medium text-white">{{ $order->special_requests }}</p>
+                        </div>
+                    @endif
                     @if ($order->notes)
                         <div>
                             <p class="text-sm text-gray-500">Notes</p>
-                            <p class="font-medium">{{ $order->notes }}</p>
+                            <p class="font-medium text-white">{{ $order->notes }}</p>
                         </div>
                     @endif
                 </div>
             </div>
 
             @if ($order->checkout)
-                <div class="bg-white shadow rounded-lg p-6 mt-6">
-                    <h3 class="font-semibold mb-4">Payment</h3>
+                <div class="bg-[#1a1a1a] border border-gray-800 rounded-xl p-6 mt-6">
+                    <h3 class="font-semibold text-white mb-4">Payment</h3>
                     <div class="space-y-3">
                         <div>
                             <p class="text-sm text-gray-500">Method</p>
-                            <p class="font-medium">{{ ucfirst($order->checkout->payment_method) }}</p>
+                            <p class="font-medium text-white">{{ ucfirst($order->checkout->payment_method) }}</p>
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Amount Paid</p>
-                            <p class="font-medium">${{ number_format($order->checkout->amount_paid, 2) }}</p>
+                            <p class="font-medium text-amber-500">${{ number_format($order->checkout->amount_paid, 2) }}</p>
                         </div>
                         @if ($order->checkout->tip_amount > 0)
                             <div>
                                 <p class="text-sm text-gray-500">Tip</p>
-                                <p class="font-medium">${{ number_format($order->checkout->tip_amount, 2) }}</p>
+                                <p class="font-medium text-amber-500">${{ number_format($order->checkout->tip_amount, 2) }}</p>
                             </div>
                         @endif
                     </div>
@@ -201,15 +236,8 @@
 
 <style>
     @keyframes pulse {
-
-        0%,
-        100% {
-            opacity: 1;
-        }
-
-        50% {
-            opacity: 0.7;
-        }
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
     }
 
     .animate-pulse {
@@ -217,14 +245,14 @@
     }
 
     .new-item-highlight {
-        background-color: #fff3cd;
-        border-left: 3px solid #dc3545;
+        background-color: rgba(245, 158, 11, 0.1);
+        border-left: 3px solid #f59e0b;
     }
 
     .new-item-badge {
         display: inline-block;
-        background: #dc3545;
-        color: white;
+        background: #f59e0b;
+        color: #0a0a0a;
         font-size: 10px;
         font-weight: bold;
         padding: 2px 6px;

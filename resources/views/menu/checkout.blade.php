@@ -28,7 +28,7 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Montserrat', sans-serif;
             background: var(--bg-dark);
             color: var(--text-dark);
             line-height: 1.5;
@@ -668,25 +668,38 @@
             
             const specialRequests = document.getElementById('special-requests').value;
             
+            // Debug: log cart data
+            console.log('Cart data:', cart);
+            console.log('Items to send:', cart.map(item => ({ id: item.id, quantity: item.quantity })));
+            
             try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                console.log('CSRF Token:', csrfToken ? 'Found' : 'Missing');
+                
                 const response = await fetch('/checkout', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'X-CSRF-TOKEN': csrfToken || ''
                     },
                     body: JSON.stringify({
-                        items: cart,
+                        items: cart.map(item => ({ 
+                            id: item.id, 
+                            quantity: item.quantity 
+                        })),
                         special_requests: specialRequests
                     })
                 });
 
                 const data = await response.json();
+                console.log('Response:', response.status, data);
 
                 if (response.ok && data.success) {
                     window.location.href = data.redirect || ('/order-confirmation/' + data.order_id);
                 } else {
-                    showToast(data.message || '{{ __('menu.error_placing_order') }}');
+                    const errorMsg = data.message || data.error || '{{ __('menu.error_placing_order') }}';
+                    console.error('Order error:', errorMsg);
+                    showToast('Error: ' + errorMsg);
                     btn.disabled = false;
                     btn.innerHTML = `
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -697,7 +710,7 @@
                 }
             } catch (error) {
                 console.error('Error placing order:', error);
-                showToast('{{ __('menu.error_placing_order') }}');
+                showToast('Error: ' + error.message);
                 btn.disabled = false;
                 btn.innerHTML = `
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -14,7 +14,7 @@ class OrderController extends Controller
 {
     public function index()
     {
-        $orders = Order::with(['table', 'orderItems.item', 'checkout'])
+        $orders = Order::with(['table', 'orderItems.item', 'checkout', 'taxes'])
             ->whereNotIn('status', ['completed', 'cancelled'])
             ->orderBy('created_at', 'desc')
             ->get();

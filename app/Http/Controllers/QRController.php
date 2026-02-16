@@ -21,6 +21,13 @@ class QRController extends Controller
             return view('qr.invalid');
         }
 
+        // Check if this is a different table than before
+        $previousTableId = session('table_id');
+        if ($previousTableId && $previousTableId != $table->id) {
+            // Clear cart when switching to a new table
+            session()->forget('cart');
+        }
+
         // Store in session
         session(['table_id' => $table->id]);
         session(['table_number' => $table->table_number]);

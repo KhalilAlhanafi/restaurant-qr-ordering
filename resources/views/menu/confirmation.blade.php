@@ -29,7 +29,7 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Montserrat', sans-serif;
             background: var(--bg-dark);
             color: var(--text-dark);
             line-height: 1.5;
@@ -340,12 +340,42 @@
         
         /* Total */
         .total-section {
+            padding: 20px 0;
+            margin-top: 20px;
+            border-top: 2px solid #e5e7eb;
+        }
+        
+        .subtotal-line,
+        .tax-total-line {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-top: 20px;
-            margin-top: 20px;
-            border-top: 2px solid #e5e7eb;
+            padding: 8px 0;
+        }
+        
+        .subtotal-label,
+        .tax-total-label {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+        
+        .subtotal-value,
+        .tax-total-value {
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+        
+        .total-divider {
+            height: 2px;
+            background: linear-gradient(90deg, #e5e7eb, transparent);
+            margin: 12px 0;
+        }
+        
+        .total-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
         }
         
         .total-label {
@@ -491,6 +521,65 @@
                 padding: 30px;
             }
         }
+        
+        /* New Item Animation */
+        .item-row.new-item {
+            background: linear-gradient(90deg, rgba(212,175,55,0.1), transparent);
+            border-left: 3px solid var(--accent-gold);
+            animation: slideInHighlight 0.5s ease;
+        }
+        
+        @keyframes slideInHighlight {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* Taxes Section */
+        .taxes-section {
+            background: linear-gradient(135deg, rgba(212,175,55,0.05), rgba(212,175,55,0.02));
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+            border: 1px solid rgba(212,175,55,0.1);
+        }
+        
+        .taxes-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .tax-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(212,175,55,0.1);
+        }
+        
+        .tax-item:last-child {
+            border-bottom: none;
+        }
+        
+        .tax-name {
+            font-size: 13px;
+            color: var(--text-dark);
+        }
+        
+        .tax-amount {
+            font-size: 13px;
+            color: var(--accent-gold);
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -573,9 +662,9 @@
         <!-- Order Details Card -->
         <div class="order-card">
             <h3 class="section-title">{{ __('menu.order_details') }}</h3>
-            <ul class="item-list">
+            <ul class="item-list" id="order-items-list">
                 @foreach($order->orderItems as $orderItem)
-                    <li class="item-row">
+                    <li class="item-row" data-item-id="{{ $orderItem->id }}">
                         <div class="item-info">
                             <span class="item-qty">{{ $orderItem->quantity }}</span>
                             <span class="item-name">{{ $orderItem->item->name }}</span>
@@ -598,9 +687,37 @@
                 </div>
             @endif
 
+            <!-- Taxes Section -->
+            @if($order->taxes->count() > 0)
+                <div class="taxes-section">
+                    <div class="taxes-label">Taxes</div>
+                    @foreach($order->taxes as $tax)
+                        <div class="tax-item">
+                            <span class="tax-name">{{ $tax->title }}
+                                {{ $tax->type === 'percentage' ? '(' . $tax->value . '%)' : '' }}
+                            </span>
+                            <span class="tax-amount">${{ number_format($tax->pivot->tax_amount, 2) }}</span>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
             <div class="total-section">
-                <span class="total-label">{{ __('menu.total_amount') }}</span>
-                <span class="total-value">${{ number_format($order->total_amount, 2) }}</span>
+                <div class="subtotal-line">
+                    <span class="subtotal-label">Subtotal</span>
+                    <span class="subtotal-value">$ {{ number_format($order->orderItems->sum('subtotal'), 2) }}</span>
+                </div>
+                @if($order->taxes->count() > 0)
+                    <div class="tax-total-line">
+                        <span class="tax-total-label">Tax</span>
+                        <span class="tax-total-value">$ {{ number_format($order->taxes->sum('pivot.tax_amount'), 2) }}</span>
+                    </div>
+                @endif
+                <div class="total-divider"></div>
+                <div class="total-line">
+                    <div class="total-label">{{ __('menu.total') }}</div>
+                    <div class="total-value" id="order-total">$ {{ number_format($order->total_amount, 2) }}</div>
+                </div>
             </div>
         </div>
     </div>
@@ -655,16 +772,30 @@
         
         // Simple polling for order status updates (no WebSocket needed)
         let lastStatus = '{{ $order->status }}';
+        let lastItemCount = {{ $order->orderItems->count() }};
+        let lastTotal = {{ $order->total_amount }};
         
         async function checkOrderStatus() {
             try {
                 const response = await fetch('/admin/orders/{{ $order->id }}/data');
                 const order = await response.json();
                 
+                // Check for status changes
                 if (order.status !== lastStatus) {
                     lastStatus = order.status;
                     updateStatusUI(order.status);
                     showStatusNotification(order.status);
+                }
+                
+                // Check for new items added by admin
+                if (order.total_items > lastItemCount || Math.abs(order.total_amount - lastTotal) > 0.01) {
+                    lastItemCount = order.total_items;
+                    lastTotal = order.total_amount;
+                    showNewItemsNotification();
+                    
+                    // Update items list dynamically
+                    updateItemsList(order.items);
+                    updateOrderTotal(order.total_amount);
                 }
                 
                 if (order.status === 'completed' || order.status === 'cancelled') {
@@ -672,6 +803,59 @@
                 }
             } catch (e) {
                 console.log('Status check failed:', e);
+            }
+        }
+        
+        function showNewItemsNotification() {
+            const notification = document.getElementById('status-notification');
+            const text = document.getElementById('notification-text');
+            text.textContent = 'New items added to your order!';
+            notification.classList.add('show');
+            setTimeout(() => notification.classList.remove('show'), 3000);
+        }
+        
+        function updateItemsList(items) {
+            const itemsList = document.getElementById('order-items-list');
+            const existingItems = new Set();
+            
+            // Track existing items
+            itemsList.querySelectorAll('.item-row').forEach(row => {
+                existingItems.add(row.dataset.itemId);
+            });
+            
+            // Add new items
+            items.forEach(item => {
+                if (!existingItems.has(item.id.toString())) {
+                    const li = document.createElement('li');
+                    li.className = 'item-row new-item';
+                    li.dataset.itemId = item.id;
+                    li.innerHTML = `
+                        <div class="item-info">
+                            <span class="item-qty">${item.quantity}</span>
+                            <span class="item-name">${item.name}</span>
+                        </div>
+                        <span class="item-price">
+                            ${item.is_unseen ? '$' + (item.unit_price * item.quantity).toFixed(2) : '--'}
+                        </span>
+                    `;
+                    itemsList.appendChild(li);
+                    
+                    // Remove highlight after 3 seconds
+                    setTimeout(() => {
+                        li.classList.remove('new-item');
+                    }, 3000);
+                }
+            });
+        }
+        
+        function updateOrderTotal(total) {
+            const totalElement = document.getElementById('order-total');
+            if (totalElement) {
+                totalElement.textContent = '$' + total.toFixed(2);
+                totalElement.style.color = 'var(--accent-gold)';
+                setTimeout(() => {
+                    totalElement.style.color = '';
+                }, 2000);
             }
         }
         
@@ -733,10 +917,10 @@
             }, 4000);
         }
         
-        // Check for updates every 5 seconds
+        // Check for updates every 2 seconds (faster for immediate detection)
         @if(!$order->is_checked_out)
         document.addEventListener('DOMContentLoaded', function() {
-            setInterval(checkOrderStatus, 5000);
+            setInterval(checkOrderStatus, 2000);
         });
         @endif
     </script>

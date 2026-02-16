@@ -33,6 +33,13 @@ class Order extends Model
         return $this->hasOne(Checkout::class, 'order_id');
     }
 
+    public function taxes()
+    {
+        return $this->belongsToMany(Tax::class, 'order_tax')
+            ->withPivot('tax_amount')
+            ->withTimestamps();
+    }
+
     public function hasUnseenUpdates(): bool
     {
         return $this->unseenItemsCount() > 0;

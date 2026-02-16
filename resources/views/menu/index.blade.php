@@ -27,7 +27,7 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Montserrat', sans-serif;
             background: var(--bg-dark);
             color: var(--text-dark);
             line-height: 1.5;

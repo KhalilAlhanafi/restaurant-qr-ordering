@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ItemController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ReservationController;
 use App\Http\Controllers\Admin\TableController;
+use App\Http\Controllers\Admin\TaxController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\MenuController;
@@ -106,4 +107,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // QR Codes
     Route::get('/qr-codes', [QRController::class, 'generateAll'])->name('qr-codes');
     Route::get('/qr-code-image/{token}', [QRController::class, 'generateQrImage'])->name('qr-code-image');
+
+    // Taxes
+    Route::resource('taxes', TaxController::class);
 });

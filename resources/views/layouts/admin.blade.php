@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&display=swap"
         rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
@@ -19,7 +19,7 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Montserrat', sans-serif;
         }
 
         h1,
@@ -29,7 +29,8 @@
         h5,
         h6,
         .font-serif {
-            font-family: 'Playfair Display', serif;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
         }
 
         /* CustomScrollbar */
@@ -97,12 +98,12 @@
                     <span class="text-sm font-medium">Dashboard</span>
                 </a>
 
-                <a href="{{ route('admin.items.index') }}"
+                <a href="{{ route('admin.categories.index') }}"
                     class="flex items-center px-4 py-3 rounded-lg group transition-all duration-200 {{ request()->routeIs('admin.items.*', 'admin.categories.*') ? 'bg-[#1a1a1a] text-amber-500 border-l-2 border-amber-500' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
-                    <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.items.*') ? 'text-amber-500' : 'text-gray-500 group-hover:text-white' }}"
+                    <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.items.*', 'admin.categories.*') ? 'text-amber-500' : 'text-gray-500 group-hover:text-white' }}"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
                         </path>
                     </svg>
                     <span class="text-sm font-medium">Categories & Items</span>
@@ -138,6 +139,16 @@
                             d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
                     </svg>
                     <span class="text-sm font-medium">Orders</span>
+                </a>
+
+                <a href="{{ route('admin.taxes.index') }}"
+                    class="flex items-center px-4 py-3 rounded-lg group transition-all duration-200 {{ request()->routeIs('admin.taxes.*') ? 'bg-[#1a1a1a] text-amber-500 border-l-2 border-amber-500' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
+                    <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.taxes.*') ? 'text-amber-500' : 'text-gray-500 group-hover:text-white' }}"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"></path>
+                    </svg>
+                    <span class="text-sm font-medium">Taxes</span>
                 </a>
 
                 <a href="{{ route('admin.qr-codes') }}"
