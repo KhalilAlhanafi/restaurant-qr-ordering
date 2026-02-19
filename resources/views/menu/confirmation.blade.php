@@ -1,763 +1,959 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Order Confirmation - Table {{ $order->table->table_number }}</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Order #{{ $order->id }} — Table {{ $order->table->table_number }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Montserrat:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
+        /* ── Reset ────────────────────────────────────────── */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             -webkit-tap-highlight-color: transparent;
         }
-        
+
         :root {
-            --bg-dark: #1a1a2e;
-            --bg-card: #ffffff;
-            --accent-gold: #d4af37;
-            --accent-gold-light: #f4d03f;
-            --text-dark: #1a1a2e;
-            --text-muted: #6b7280;
-            --text-light: #ffffff;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --shadow: 0 4px 20px rgba(0,0,0,0.15);
-            --shadow-soft: 0 2px 10px rgba(0,0,0,0.08);
+            --bg: #0d0d0d;
+            --surface: #161616;
+            --surface2: #1e1e1e;
+            --border: rgba(255, 255, 255, 0.06);
+            --gold: #c9a84c;
+            --gold-l: #e5c46a;
+            --gold-dim: rgba(201, 168, 76, 0.12);
+            --white: #ffffff;
+            --gray: rgba(255, 255, 255, 0.45);
+            --green: #3ec98a;
+            --red: #ef4444;
+            --blue: #60a5fa;
         }
-        
+
         body {
             font-family: 'Montserrat', sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-dark);
-            line-height: 1.5;
+            background: var(--bg);
+            color: var(--white);
             min-height: 100vh;
+            min-height: 100dvh;
+            padding-bottom: 110px;
         }
-        
-        /* Success Header */
-        .success-header {
-            background: linear-gradient(135deg, #2d2d44 0%, var(--bg-dark) 100%);
-            padding: 50px 20px 30px;
+
+        /* ── Success Hero Section ─────────────────────────── */
+        .hero {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 48px 20px 40px;
             text-align: center;
             position: relative;
             overflow: hidden;
         }
-        
-        .success-header::before {
+
+        /* Cross-grid pattern background */
+        .hero::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="%23d4af37" stroke-width="0.5" opacity="0.1"/></svg>') repeat;
-            background-size: 50px;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 36px 36px;
+            pointer-events: none;
         }
-        
-        .success-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+
+        /* Gold glow orb behind icon */
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            height: 160px;
+            background: radial-gradient(circle, rgba(201, 168, 76, 0.15), transparent 70%);
+            pointer-events: none;
+        }
+
+        .success-ring {
+            position: relative;
+            z-index: 1;
+            width: 84px;
+            height: 84px;
+            margin: 0 auto 24px;
+        }
+
+        .success-circle {
+            width: 84px;
+            height: 84px;
             border-radius: 50%;
+            background: var(--gold-dim);
+            border: 2px solid var(--gold);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
-            font-size: 40px;
-            box-shadow: 0 10px 40px rgba(212,175,55,0.4);
-            animation: scaleIn 0.5s ease;
-            position: relative;
-            z-index: 1;
+            animation: popIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+            box-shadow:
+                0 0 0 12px rgba(201, 168, 76, 0.06),
+                0 0 0 24px rgba(201, 168, 76, 0.03);
         }
-        
-        @keyframes scaleIn {
-            0% { transform: scale(0); opacity: 0; }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); opacity: 1; }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            60% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
-        
-        .success-title {
+
+        .success-circle svg {
+            width: 36px;
+            height: 36px;
+            stroke: var(--gold);
+            fill: none;
+            stroke-width: 2.5;
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
             font-size: 26px;
             font-weight: 700;
-            color: var(--text-light);
+            color: var(--white);
             margin-bottom: 8px;
             position: relative;
             z-index: 1;
+            animation: fadeUp 0.5s 0.2s ease both;
         }
-        
-        .success-message {
-            font-size: 15px;
-            color: rgba(255,255,255,0.7);
+
+        .hero-sub {
+            font-size: 13.5px;
+            color: var(--gray);
             max-width: 280px;
             margin: 0 auto;
+            line-height: 1.6;
             position: relative;
             z-index: 1;
+            animation: fadeUp 0.5s 0.3s ease both;
         }
-        
-        /* Container */
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Container ────────────────────────────────────── */
         .container {
             max-width: 600px;
             margin: 0 auto;
-            padding: 20px;
-            padding-bottom: 100px;
-        }
-        
-        /* Cards */
-        .order-card {
-            background: var(--bg-card);
-            border-radius: 20px;
-            padding: 24px;
-            margin-bottom: 16px;
-            box-shadow: var(--shadow-soft);
-        }
-        
-        /* Order Header */
-        .order-header {
+            padding: 20px 16px;
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #f3f4f6;
+            flex-direction: column;
+            gap: 14px;
         }
-        
-        .order-info h2 {
+
+        /* ── Card ─────────────────────────────────────────── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-head-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-bar {
+            width: 3px;
+            height: 16px;
+            background: var(--gold);
+            border-radius: 2px;
+        }
+
+        .card-label {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gray);
+        }
+
+        /* ── Order meta row ───────────────────────────────── */
+        .order-meta {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .order-num {
             font-size: 20px;
             font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 4px;
+            color: var(--white);
         }
-        
-        .order-meta {
-            font-size: 14px;
-            color: var(--text-muted);
+
+        .order-table {
+            font-size: 12px;
+            color: var(--gray);
+            margin-top: 3px;
         }
-        
-        .status-wrapper {
-            text-align: right;
-        }
-        
+
+        /* Status badge */
         .status-badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
+            padding: 7px 14px;
+            border-radius: 50px;
+            font-size: 11px;
             font-weight: 700;
-            text-transform: uppercase;
             letter-spacing: 0.5px;
+            text-transform: uppercase;
+            flex-shrink: 0;
         }
-        
-        .status-pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
-        
-        .status-preparing {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-        
-        .status-ready {
-            background: #d1fae5;
-            color: #065f46;
-        }
-        
-        .status-served {
-            background: #e0e7ff;
-            color: #3730a3;
-        }
-        
-        .status-completed {
-            background: var(--accent-gold);
-            color: var(--bg-dark);
-        }
-        
-        .pulse {
-            width: 8px;
-            height: 8px;
-            background: currentColor;
+
+        .badge-dot {
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
-            animation: pulse 2s infinite;
+            background: currentColor;
+            animation: blink 2s infinite;
         }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
         }
-        
-        /* Progress Tracker */
-        .progress-tracker {
+
+        .status-pending {
+            background: rgba(251, 191, 36, 0.12);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .status-preparing {
+            background: rgba(96, 165, 250, 0.12);
+            color: #60a5fa;
+            border: 1px solid rgba(96, 165, 250, 0.2);
+        }
+
+        .status-ready {
+            background: rgba(62, 201, 138, 0.12);
+            color: #3ec98a;
+            border: 1px solid rgba(62, 201, 138, 0.2);
+        }
+
+        .status-served {
+            background: rgba(167, 139, 250, 0.12);
+            color: #a78bfa;
+            border: 1px solid rgba(167, 139, 250, 0.2);
+        }
+
+        .status-completed {
+            background: var(--gold-dim);
+            color: var(--gold);
+            border: 1px solid rgba(201, 168, 76, 0.2);
+        }
+
+        /* ── Progress tracker ─────────────────────────────── */
+        .progress-wrap {
+            padding: 20px 20px 22px;
+        }
+
+        .progress-steps {
             display: flex;
             justify-content: space-between;
-            margin: 20px 0;
             position: relative;
         }
-        
-        .progress-tracker::before {
+
+        /* Connecting line behind steps */
+        .progress-steps::before {
             content: '';
             position: absolute;
-            top: 15px;
-            left: 15%;
-            right: 15%;
+            top: 19px;
+            left: 10%;
+            right: 10%;
             height: 2px;
-            background: #e5e7eb;
+            background: var(--surface2);
             z-index: 0;
         }
-        
-        .progress-step {
+
+        .p-step {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 8px;
             z-index: 1;
+            flex: 1;
         }
-        
-        .step-icon {
-            width: 32px;
-            height: 32px;
+
+        .p-step-dot {
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
-            background: #e5e7eb;
+            background: var(--surface2);
+            border: 2px solid rgba(255, 255, 255, 0.08);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
-            transition: all 0.3s ease;
+            font-size: 15px;
+            transition: all 0.4s ease;
+            flex-shrink: 0;
         }
-        
-        .step-icon.active {
-            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
-            box-shadow: 0 4px 12px rgba(212,175,55,0.4);
+
+        .p-step-dot.active {
+            background: var(--gold-dim);
+            border-color: var(--gold);
+            box-shadow: 0 0 0 6px rgba(201, 168, 76, 0.08);
         }
-        
-        .step-icon.completed {
-            background: var(--success);
-            color: white;
+
+        .p-step-dot.done {
+            background: rgba(62, 201, 138, 0.15);
+            border-color: var(--green);
         }
-        
-        .step-label {
-            font-size: 11px;
-            color: var(--text-muted);
+
+        .p-step-dot.done svg {
+            width: 16px;
+            height: 16px;
+            stroke: var(--green);
+            fill: none;
+            stroke-width: 2.5;
+        }
+
+        .p-step-label {
+            font-size: 10px;
             font-weight: 600;
-        }
-        
-        /* Estimated Time */
-        .est-time-box {
-            background: linear-gradient(135deg, rgba(212,175,55,0.1), rgba(212,175,55,0.05));
-            border-radius: 16px;
-            padding: 24px;
+            letter-spacing: 0.5px;
+            color: var(--gray);
             text-align: center;
-            border: 1px solid rgba(212,175,55,0.2);
+            line-height: 1.3;
         }
-        
-        .est-time-label {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .est-time-value {
-            font-size: 36px;
-            font-weight: 800;
-            color: var(--accent-gold);
-        }
-        
-        .est-time-unit {
-            font-size: 16px;
-            color: var(--text-muted);
-        }
-        
-        /* Section Title */
-        .section-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 16px;
+
+        /* ── ETA card ─────────────────────────────────────── */
+        .eta-inner {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 16px;
+            padding: 16px 20px 20px;
         }
-        
-        .section-title::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(90deg, #e5e7eb, transparent);
+
+        .eta-icon {
+            width: 52px;
+            height: 52px;
+            background: var(--gold-dim);
+            border: 1px solid rgba(201, 168, 76, 0.2);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
         }
-        
-        /* Item List */
-        .item-list {
-            list-style: none;
+
+        .eta-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gray);
+            margin-bottom: 5px;
         }
-        
+
+        .eta-val {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--gold);
+            line-height: 1;
+        }
+
+        .eta-unit {
+            font-size: 14px;
+            color: var(--gray);
+            font-weight: 400;
+        }
+
+        /* ── Items list ───────────────────────────────────── */
+        .items-list {
+            padding: 0 20px 4px;
+        }
+
         .item-row {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 16px 0;
-            border-bottom: 1px solid #f3f4f6;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+            gap: 12px;
+            transition: background 0.3s ease;
         }
-        
+
         .item-row:last-child {
             border-bottom: none;
         }
-        
-        .item-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .item-qty {
-            width: 28px;
-            height: 28px;
-            background: var(--bg-dark);
-            color: white;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 700;
-        }
-        
-        .item-name {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-dark);
-        }
-        
-        .item-price {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--accent-gold);
-        }
-        
-        /* Total */
-        .total-section {
-            padding: 20px 0;
-            margin-top: 20px;
-            border-top: 2px solid #e5e7eb;
-        }
-        
-        .subtotal-line,
-        .tax-total-line {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-        }
-        
-        .subtotal-label,
-        .tax-total-label {
-            font-size: 14px;
-            color: var(--text-muted);
-        }
-        
-        .subtotal-value,
-        .tax-total-value {
-            font-size: 14px;
-            color: var(--text-dark);
-        }
-        
-        .total-divider {
-            height: 2px;
-            background: linear-gradient(90deg, #e5e7eb, transparent);
-            margin: 12px 0;
-        }
-        
-        .total-line {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 12px;
-        }
-        
-        .total-label {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-dark);
-        }
-        
-        .total-value {
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--accent-gold);
-        }
-        
-        /* Special Requests */
-        .special-requests {
-            background: linear-gradient(135deg, #fef9e7, #fef3c7);
-            border-radius: 12px;
-            padding: 16px;
-            margin-top: 16px;
-            border-left: 4px solid var(--accent-gold);
-        }
-        
-        .special-requests-label {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 6px;
-        }
-        
-        .special-requests-text {
-            font-size: 14px;
-            color: var(--text-dark);
-            font-style: italic;
-        }
-        
-        /* Actions */
-        .actions {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--bg-card);
-            padding: 16px 20px 24px;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-            display: flex;
-            gap: 12px;
-            z-index: 100;
-        }
-        
-        .btn {
-            flex: 1;
-            padding: 16px 24px;
-            border-radius: 14px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            text-align: center;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        .btn-secondary {
-            background: #f3f4f6;
-            color: var(--text-dark);
-        }
-        
-        .btn-secondary:hover {
-            background: #e5e7eb;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
-            color: var(--bg-dark);
-            box-shadow: 0 4px 15px rgba(212,175,55,0.4);
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(212,175,55,0.5);
-        }
-        
-        /* Status Notification */
-        .status-notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: var(--text-dark);
-            color: white;
-            padding: 16px 24px;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 600;
-            z-index: 3000;
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        
-        .status-notification.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-        
-        .status-icon {
-            width: 28px;
-            height: 28px;
-            background: var(--accent-gold);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-        
-        /* Checked Out State */
-        .checked-out-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: var(--success);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            margin-top: 8px;
-        }
-        
-        /* Responsive */
-        @media (min-width: 768px) {
-            .container {
-                padding: 30px;
-            }
-        }
-        
-        /* New Item Animation */
+
         .item-row.new-item {
-            background: linear-gradient(90deg, rgba(212,175,55,0.1), transparent);
-            border-left: 3px solid var(--accent-gold);
-            animation: slideInHighlight 0.5s ease;
+            background: linear-gradient(90deg, rgba(201, 168, 76, 0.06), transparent);
+            border-left: 3px solid var(--gold);
+            padding-left: 12px;
+            animation: slideIn 0.4s ease;
         }
-        
-        @keyframes slideInHighlight {
+
+        @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateX(-20px);
+                transform: translateX(-16px);
             }
+
             to {
                 opacity: 1;
                 transform: translateX(0);
             }
         }
-        
-        /* Taxes Section */
-        .taxes-section {
-            background: linear-gradient(135deg, rgba(212,175,55,0.05), rgba(212,175,55,0.02));
-            border-radius: 12px;
-            padding: 16px;
-            margin-top: 16px;
-            border: 1px solid rgba(212,175,55,0.1);
+
+        .item-row-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
         }
-        
-        .taxes-label {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
+
+        .qty-chip {
+            width: 28px;
+            height: 28px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--gold);
+            flex-shrink: 0;
+        }
+
+        .item-name {
+            font-size: 14px;
             font-weight: 600;
+            color: var(--white);
         }
-        
-        .tax-item {
+
+        .item-price-tag {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--gold);
+            flex-shrink: 0;
+        }
+
+        /* ── Special requests block ───────────────────────── */
+        .special-req-block {
+            margin: 8px 20px 16px;
+            background: rgba(201, 168, 76, 0.05);
+            border-left: 3px solid rgba(201, 168, 76, 0.4);
+            border-radius: 0 10px 10px 0;
+            padding: 12px 16px;
+        }
+
+        .special-req-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gray);
+            margin-bottom: 4px;
+        }
+
+        .special-req-text {
+            font-size: 13.5px;
+            color: rgba(255, 255, 255, 0.7);
+            font-style: italic;
+        }
+
+        /* ── Total section ────────────────────────────────── */
+        .totals-block {
+            padding: 8px 20px 20px;
+        }
+
+        .taxes-section {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+        }
+
+        .taxes-title {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gray);
+            margin-bottom: 10px;
+        }
+
+        .tax-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 6px 0;
-            border-bottom: 1px solid rgba(212,175,55,0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 13px;
         }
-        
-        .tax-item:last-child {
+
+        .tax-row:last-child {
             border-bottom: none;
         }
-        
-        .tax-name {
-            font-size: 13px;
-            color: var(--text-dark);
+
+        .tax-row-label {
+            color: var(--gray);
         }
-        
-        .tax-amount {
-            font-size: 13px;
-            color: var(--accent-gold);
+
+        .tax-row-val {
+            color: var(--gold);
             font-weight: 600;
+        }
+
+        .subtotal-row,
+        .tax-sum-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 0;
+            font-size: 13px;
+            color: var(--gray);
+        }
+
+        .divider-thin {
+            height: 1px;
+            background: var(--border);
+            margin: 10px 0;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0 4px;
+        }
+
+        .total-row-label {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--gray);
+        }
+
+        .total-row-val {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--white);
+        }
+
+        /* ── Fixed action bar ─────────────────────────────── */
+        .actions-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 20px;
+            border-radius: 50px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.25s ease;
+            text-align: center;
+        }
+
+        .btn svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.5;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--gray);
+        }
+
+        .btn-outline:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            color: var(--white);
+        }
+
+        .btn-gold {
+            background: var(--gold);
+            color: #0d0d0d;
+            box-shadow: 0 4px 16px rgba(201, 168, 76, 0.35);
+        }
+
+        .btn-gold:hover {
+            background: var(--gold-l);
+            box-shadow: 0 8px 24px rgba(201, 168, 76, 0.45);
+        }
+
+        /* ── Toast/notification ───────────────────────────── */
+        .notif {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-80px);
+            background: var(--surface2);
+            border: 1px solid rgba(201, 168, 76, 0.25);
+            color: var(--white);
+            padding: 13px 22px;
+            border-radius: 50px;
+            font-size: 13.5px;
+            font-weight: 500;
+            z-index: 3000;
+            opacity: 0;
+            white-space: nowrap;
+            transition: all 0.4s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .notif.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .notif-icon {
+            font-size: 16px;
+        }
+
+        /* ── Checked-out paid badge ───────────────────────── */
+        .paid-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(62, 201, 138, 0.12);
+            color: var(--green);
+            border: 1px solid rgba(62, 201, 138, 0.2);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 50px;
+            margin-top: 6px;
+        }
+
+        /* ── RTL support ──────────────────────────────────── */
+        [dir="rtl"] .order-meta {
+            flex-direction: row-reverse;
+        }
+
+        [dir="rtl"] .card-head {
+            flex-direction: row-reverse;
+        }
+
+        [dir="rtl"] .item-row {
+            flex-direction: row-reverse;
+        }
+
+        [dir="rtl"] .item-row-info {
+            flex-direction: row-reverse;
+        }
+
+        [dir="rtl"] .total-row {
+            flex-direction: row-reverse;
+        }
+
+        [dir="rtl"] .actions-bar {
+            flex-direction: row-reverse;
         }
     </style>
 </head>
+
 <body>
-    <!-- Success Header -->
-    <div class="success-header">
-        <div class="success-icon">✓</div>
-        <h1 class="success-title">
-            @if($order->is_checked_out)
-                Order Completed!
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- HERO                                                    -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="hero">
+        <div class="success-ring">
+            <div class="success-circle">
+                @if ($order->is_checked_out)
+                    <svg viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                @else
+                    <svg viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                @endif
+            </div>
+        </div>
+
+        <h1 class="hero-title">
+            @if ($order->is_checked_out)
+                {{ __('menu.order_completed') }}
             @else
-                Order Confirmed
+                {{ __('menu.order_number') }} #{{ $order->id }}
             @endif
         </h1>
-        <p class="success-message">
-            @if($order->is_checked_out)
-                Thank you for dining with us. We hope to see you again soon!
+        <p class="hero-sub">
+            @if ($order->is_checked_out)
+                {{ __('menu.order_completed_msg') }}
             @else
-                Your order has been sent to the kitchen. You can track its progress below.
+                {{ __('menu.order_sent_msg') }}
             @endif
         </p>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- MAIN CONTENT                                            -->
+    <!-- ═══════════════════════════════════════════════════════ -->
     <div class="container">
-        <!-- Order Status Card -->
-        <div class="order-card">
-            <div class="order-header">
-                <div class="order-info">
-                    <h2>{{ __('menu.order_number') }} #{{ $order->id }}</h2>
-                    <p class="order-meta">{{ __('menu.table') }} {{ $order->table->table_number }}</p>
+
+        <!-- ── Status & Progress Card ───────────────────────── -->
+        <div class="card">
+            <!-- Order # / status -->
+            <div class="order-meta">
+                <div>
+                    <div class="order-num">{{ __('menu.order_number') }} #{{ $order->id }}</div>
+                    <div class="order-table">{{ __('menu.table') }} {{ $order->table->table_number }}</div>
                 </div>
-                <div class="status-wrapper">
-                    <span class="status-badge status-{{ $order->status }}">
-                        <span class="pulse"></span>
-                        {{ ucfirst($order->status) }}
+                <div style="text-align:right;">
+                    <span class="status-badge status-{{ $order->status }}" id="status-badge">
+                        <span class="badge-dot"></span>
+                        <span id="status-text">{{ ucfirst($order->status) }}</span>
                     </span>
-                    @if($order->is_checked_out)
-                        <span class="checked-out-badge">✓ {{ __('menu.paid') }}</span>
+                    @if ($order->is_checked_out)
+                        <div><span class="paid-badge">✓ {{ __('menu.paid') }}</span></div>
                     @endif
                 </div>
             </div>
-            
-            @if(!$order->is_checked_out)
-            <!-- Progress Tracker -->
-            <div class="progress-tracker" id="progress-tracker">
-                <div class="progress-step">
-                    <div class="step-icon {{ in_array($order->status, ['pending', 'preparing', 'ready', 'served', 'completed']) ? 'completed' : 'active' }}">✓</div>
-                    <span class="step-label">{{ __('menu.status_received') }}</span>
-                </div>
-                <div class="progress-step">
-                    <div class="step-icon {{ in_array($order->status, ['preparing', 'ready', 'served', 'completed']) ? (in_array($order->status, ['ready', 'served', 'completed']) ? 'completed' : 'active') : '' }}">
-                        {{ in_array($order->status, ['ready', 'served', 'completed']) ? '✓' : '👨‍🍳' }}
+
+            @if (!$order->is_checked_out)
+                <!-- Progress Steps -->
+                <div class="progress-wrap">
+                    <div class="progress-steps" id="progress-steps">
+
+                        @php
+                            $statuses = ['pending', 'preparing', 'ready', 'served'];
+                            $labels = [
+                                __('menu.status_received'),
+                                __('menu.status_preparing'),
+                                __('menu.status_ready'),
+                                __('menu.status_served'),
+                            ];
+                            $icons = ['📋', '👨‍🍳', '🍽', '✨'];
+                            $cur = array_search($order->status, $statuses);
+                        @endphp
+
+                        @foreach ($statuses as $i => $st)
+                            <div class="p-step">
+                                <div class="p-step-dot {{ $i < $cur ? 'done' : ($i === $cur ? 'active' : '') }}"
+                                    id="step-{{ $i }}">
+                                    @if ($i < $cur)
+                                        <svg viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    @else
+                                        {{ $icons[$i] }}
+                                    @endif
+                                </div>
+                                <span class="p-step-label">{{ $labels[$i] }}</span>
+                            </div>
+                        @endforeach
+
                     </div>
-                    <span class="step-label">{{ __('menu.status_preparing') }}</span>
                 </div>
-                <div class="progress-step">
-                    <div class="step-icon {{ in_array($order->status, ['ready', 'served', 'completed']) ? (in_array($order->status, ['served', 'completed']) ? 'completed' : 'active') : '' }}">
-                        {{ in_array($order->status, ['served', 'completed']) ? '✓' : '🍽' }}
-                    </div>
-                    <span class="step-label">{{ __('menu.status_ready') }}</span>
-                </div>
-                <div class="progress-step">
-                    <div class="step-icon {{ $order->status === 'completed' ? 'completed' : '' }}">
-                        {{ $order->status === 'completed' ? '✓' : '✨' }}
-                    </div>
-                    <span class="step-label">{{ __('menu.status_served') }}</span>
-                </div>
-            </div>
-            
-            <!-- Estimated Time -->
-            <div class="est-time-box">
-                <div class="est-time-label">{{ __('menu.estimated_time') }}</div>
-                <div class="est-time-value">
-                    <span id="est-minutes">{{ $order->estimated_minutes }}</span>
-                    <span class="est-time-unit">{{ __('menu.minutes') }}</span>
-                </div>
-            </div>
             @endif
         </div>
 
-        <!-- Order Details Card -->
-        <div class="order-card">
-            <h3 class="section-title">{{ __('menu.order_details') }}</h3>
-            <ul class="item-list" id="order-items-list">
-                @foreach($order->orderItems as $orderItem)
-                    <li class="item-row" data-item-id="{{ $orderItem->id }}">
-                        <div class="item-info">
-                            <span class="item-qty">{{ $orderItem->quantity }}</span>
-                            <span class="item-name">{{ $orderItem->item->name }}</span>
+        @if (!$order->is_checked_out)
+            <!-- ── ETA Card ─────────────────────────────────────── -->
+            <div class="card">
+                <div class="eta-inner">
+                    <div class="eta-icon">⏱️</div>
+                    <div>
+                        <div class="eta-label">{{ __('menu.estimated_time') }}</div>
+                        <div class="eta-val">
+                            <span id="est-minutes">{{ $order->estimated_minutes }}</span>
+                            <span class="eta-unit">{{ __('menu.minutes') }}</span>
                         </div>
-                        <span class="item-price">
-                            @if($orderItem->item->show_price)
-                                ${{ number_format($orderItem->unit_price * $orderItem->quantity, 2) }}
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- ── Order Details Card ───────────────────────────── -->
+        <div class="card">
+            <div class="card-head">
+                <div class="card-head-left">
+                    <div class="card-bar"></div>
+                    <span class="card-label">{{ __('menu.order_details') }}</span>
+                </div>
+            </div>
+
+            <ul class="items-list" id="order-items-list">
+                @foreach ($order->orderItems as $oi)
+                    <li class="item-row" data-item-id="{{ $oi->id }}">
+                        <div class="item-row-info">
+                            <span class="qty-chip">{{ $oi->quantity }}</span>
+                            <span class="item-name">{{ $oi->item->name }}</span>
+                        </div>
+                        <span class="item-price-tag">
+                            @if ($oi->item->show_price)
+                                ${{ number_format($oi->unit_price * $oi->quantity, 2) }}
                             @else
-                                --
+                                —
                             @endif
                         </span>
                     </li>
                 @endforeach
             </ul>
 
-            @if($order->special_requests)
-                <div class="special-requests">
-                    <div class="special-requests-label">{{ __('menu.special_requests') }}</div>
-                    <div class="special-requests-text">{{ $order->special_requests }}</div>
+            @if ($order->special_requests)
+                <div class="special-req-block">
+                    <div class="special-req-label">{{ __('menu.special_requests') }}</div>
+                    <div class="special-req-text">{{ $order->special_requests }}</div>
                 </div>
             @endif
 
-            <!-- Taxes Section -->
-            @if($order->taxes->count() > 0)
-                <div class="taxes-section">
-                    <div class="taxes-label">Taxes</div>
-                    @foreach($order->taxes as $tax)
-                        <div class="tax-item">
-                            <span class="tax-name">{{ $tax->title }}
-                                {{ $tax->type === 'percentage' ? '(' . $tax->value . '%)' : '' }}
-                            </span>
-                            <span class="tax-amount">${{ number_format($tax->pivot->tax_amount, 2) }}</span>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
-
-            <div class="total-section">
-                <div class="subtotal-line">
-                    <span class="subtotal-label">Subtotal</span>
-                    <span class="subtotal-value">$ {{ number_format($order->orderItems->sum('subtotal'), 2) }}</span>
-                </div>
-                @if($order->taxes->count() > 0)
-                    <div class="tax-total-line">
-                        <span class="tax-total-label">Tax</span>
-                        <span class="tax-total-value">$ {{ number_format($order->taxes->sum('pivot.tax_amount'), 2) }}</span>
+            <!-- Totals -->
+            <div class="totals-block">
+                @if ($order->taxes->count() > 0)
+                    <div class="taxes-section">
+                        <div class="taxes-title">{{ __('menu.taxes_fees') }}</div>
+                        @foreach ($order->taxes as $tax)
+                            <div class="tax-row">
+                                <span class="tax-row-label">
+                                    {{ $tax->title }}
+                                    @if ($tax->type === 'percentage')
+                                        ({{ $tax->value }}%)
+                                    @endif
+                                </span>
+                                <span class="tax-row-val">${{ number_format($tax->pivot->tax_amount, 2) }}</span>
+                            </div>
+                        @endforeach
                     </div>
                 @endif
-                <div class="total-divider"></div>
-                <div class="total-line">
-                    <div class="total-label">{{ __('menu.total') }}</div>
-                    <div class="total-value" id="order-total">$ {{ number_format($order->total_amount, 2) }}</div>
+
+                <div class="subtotal-row">
+                    <span>{{ __('menu.subtotal') }}</span>
+                    <span>${{ number_format($order->orderItems->sum('subtotal'), 2) }}</span>
+                </div>
+
+                @if ($order->taxes->count() > 0)
+                    <div class="tax-sum-row">
+                        <span>{{ __('menu.tax') }}</span>
+                        <span>${{ number_format($order->taxes->sum('pivot.tax_amount'), 2) }}</span>
+                    </div>
+                @endif
+
+                <div class="divider-thin"></div>
+
+                <div class="total-row">
+                    <span class="total-row-label">{{ __('menu.total') }}</span>
+                    <span class="total-row-val" id="order-total">${{ number_format($order->total_amount, 2) }}</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Fixed Actions -->
-    <div class="actions">
-        @if(!$order->is_checked_out)
-            <a href="/menu" class="btn btn-secondary">
-                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- FIXED ACTION BAR                                        -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="actions-bar">
+        @if (!$order->is_checked_out)
+            <a href="/menu" class="btn btn-outline">
+                <svg viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 {{ __('menu.add_more') }}
             </a>
-            <form action="{{ route('checkout.finalize') }}" method="POST" style="flex: 1;">
+            <form action="{{ route('checkout.finalize') }}" method="POST" style="flex:1; display:flex;">
                 @csrf
-                <button type="submit" class="btn btn-primary" onclick="return confirm('{{ __('menu.checkout_confirm') }}')">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                <button type="submit" class="btn btn-gold" style="width:100%"
+                    onclick="return confirm('{{ __('menu.checkout_confirm') }}')">
+                    <svg viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                     {{ __('menu.checkout') }}
                 </button>
             </form>
         @else
-            <a href="/menu" class="btn btn-primary" style="flex: 1;">
-                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            <a href="/menu" class="btn btn-gold" style="font-size:14px;">
+                <svg viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 {{ __('menu.start_new_order') }}
             </a>
         @endif
     </div>
 
-    <!-- Status Notification -->
-    <div class="status-notification" id="status-notification">
-        <div class="status-icon">🍽</div>
-        <span id="notification-text">{{ __('menu.your_order_is_being_prepared') }}</span>
+    <!-- Status notification toast -->
+    <div class="notif" id="notif">
+        <span class="notif-icon" id="notif-icon">🍽</span>
+        <span id="notif-text">{{ __('menu.your_order_is_being_prepared') }}</span>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- SCRIPT                                                  -->
+    <!-- ═══════════════════════════════════════════════════════ -->
     <script>
-        // Translations from Laravel
+        /* ── Translations ──────────────────────────────────── */
         const trans = {
             orderReceived: "{{ __('menu.order_received') }}",
             nowPreparing: "{{ __('menu.now_preparing') }}",
@@ -768,161 +964,160 @@
             statusPreparing: "{{ __('menu.status_preparing') }}",
             statusReady: "{{ __('menu.status_ready') }}",
             statusServed: "{{ __('menu.status_served') }}",
+            newItemsMsg: "{{ __('menu.items_added') }}"
         };
-        
-        // Simple polling for order status updates (no WebSocket needed)
+
+        /* ── State ─────────────────────────────────────────── */
         let lastStatus = '{{ $order->status }}';
         let lastItemCount = {{ $order->orderItems->count() }};
         let lastTotal = {{ $order->total_amount }};
-        
-        async function checkOrderStatus() {
+
+        /* ── Poll order status every 2s ─────────────────────  */
+        async function checkStatus() {
             try {
-                const response = await fetch('/admin/orders/{{ $order->id }}/data');
-                const order = await response.json();
-                
-                // Check for status changes
+                const res = await fetch('/admin/orders/{{ $order->id }}/data');
+                const order = await res.json();
+
                 if (order.status !== lastStatus) {
                     lastStatus = order.status;
-                    updateStatusUI(order.status);
-                    showStatusNotification(order.status);
+                    updateStatusBadge(order.status);
+                    updateProgressSteps(order.status);
+                    showNotif(order.status);
                 }
-                
-                // Check for new items added by admin
+
                 if (order.total_items > lastItemCount || Math.abs(order.total_amount - lastTotal) > 0.01) {
                     lastItemCount = order.total_items;
                     lastTotal = order.total_amount;
-                    showNewItemsNotification();
-                    
-                    // Update items list dynamically
-                    updateItemsList(order.items);
-                    updateOrderTotal(order.total_amount);
+                    addNewItems(order.items);
+                    updateTotal(order.total_amount);
+                    showRawNotif('🍽', trans.newItemsMsg);
                 }
-                
+
                 if (order.status === 'completed' || order.status === 'cancelled') {
                     location.reload();
                 }
             } catch (e) {
-                console.log('Status check failed:', e);
+                console.log('Poll failed:', e);
             }
         }
-        
-        function showNewItemsNotification() {
-            const notification = document.getElementById('status-notification');
-            const text = document.getElementById('notification-text');
-            text.textContent = 'New items added to your order!';
-            notification.classList.add('show');
-            setTimeout(() => notification.classList.remove('show'), 3000);
+
+        /* ── Update status badge ────────────────────────────── */
+        function updateStatusBadge(status) {
+            const badge = document.getElementById('status-badge');
+            const text = document.getElementById('status-text');
+            if (!badge) return;
+
+            const classes = ['status-pending', 'status-preparing', 'status-ready', 'status-served', 'status-completed'];
+            badge.classList.remove(...classes);
+            badge.classList.add('status-' + status);
+
+            const labels = {
+                pending: trans.statusReceived,
+                preparing: trans.statusPreparing,
+                ready: trans.statusReady,
+                served: trans.statusServed,
+                completed: trans.statusServed,
+            };
+            if (text) text.textContent = labels[status] || status;
         }
-        
-        function updateItemsList(items) {
-            const itemsList = document.getElementById('order-items-list');
-            const existingItems = new Set();
-            
-            // Track existing items
-            itemsList.querySelectorAll('.item-row').forEach(row => {
-                existingItems.add(row.dataset.itemId);
+
+        /* ── Update progress steps ──────────────────────────── */
+        function updateProgressSteps(status) {
+            const order = ['pending', 'preparing', 'ready', 'served'];
+            const icons = ['📋', '👨‍🍳', '🍽', '✨'];
+            const cur = order.indexOf(status);
+
+            order.forEach((_, i) => {
+                const dot = document.getElementById('step-' + i);
+                if (!dot) return;
+
+                if (i < cur) {
+                    dot.className = 'p-step-dot done';
+                    dot.innerHTML =
+                        '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--green)" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
+                } else if (i === cur) {
+                    dot.className = 'p-step-dot active';
+                    dot.textContent = icons[i];
+                }
             });
-            
-            // Add new items
+        }
+
+        /* ── Add new items to list ──────────────────────────── */
+        function addNewItems(items) {
+            const list = document.getElementById('order-items-list');
+            const known = new Set();
+            list.querySelectorAll('.item-row').forEach(r => known.add(r.dataset.itemId));
+
             items.forEach(item => {
-                if (!existingItems.has(item.id.toString())) {
+                if (!known.has(String(item.id))) {
                     const li = document.createElement('li');
                     li.className = 'item-row new-item';
                     li.dataset.itemId = item.id;
                     li.innerHTML = `
-                        <div class="item-info">
-                            <span class="item-qty">${item.quantity}</span>
+                        <div class="item-row-info">
+                            <span class="qty-chip">${item.quantity}</span>
                             <span class="item-name">${item.name}</span>
                         </div>
-                        <span class="item-price">
-                            ${item.is_unseen ? '$' + (item.unit_price * item.quantity).toFixed(2) : '--'}
-                        </span>
+                        <span class="item-price-tag">${item.unit_price ? '$' + (item.unit_price * item.quantity).toFixed(2) : '—'}</span>
                     `;
-                    itemsList.appendChild(li);
-                    
-                    // Remove highlight after 3 seconds
-                    setTimeout(() => {
-                        li.classList.remove('new-item');
-                    }, 3000);
+                    list.appendChild(li);
+                    setTimeout(() => li.classList.remove('new-item'), 3500);
                 }
             });
         }
-        
-        function updateOrderTotal(total) {
-            const totalElement = document.getElementById('order-total');
-            if (totalElement) {
-                totalElement.textContent = '$' + total.toFixed(2);
-                totalElement.style.color = 'var(--accent-gold)';
-                setTimeout(() => {
-                    totalElement.style.color = '';
-                }, 2000);
-            }
+
+        /* ── Update total display ───────────────────────────── */
+        function updateTotal(amt) {
+            const el = document.getElementById('order-total');
+            if (!el) return;
+            el.textContent = '$' + amt.toFixed(2);
+            el.style.color = 'var(--gold)';
+            setTimeout(() => el.style.color = '', 2000);
         }
-        
-        function updateStatusUI(status) {
-            // Update status badge
-            const badge = document.querySelector('.status-badge');
-            if (badge) {
-                badge.className = 'status-badge status-' + status;
-                const statusText = {
-                    'pending': trans.statusReceived,
-                    'preparing': trans.statusPreparing,
-                    'ready': trans.statusReady,
-                    'served': trans.statusServed,
-                    'completed': trans.statusServed
-                };
-                badge.innerHTML = '<span class="pulse"></span>' + (statusText[status] || status);
-            }
-            
-            // Update progress tracker
-            updateProgressTracker(status);
-        }
-        
-        function updateProgressTracker(status) {
-            const steps = document.querySelectorAll('.step-icon');
-            const stepOrder = ['pending', 'preparing', 'ready', 'served', 'completed'];
-            const currentIndex = stepOrder.indexOf(status);
-            
-            steps.forEach((step, index) => {
-                if (index < currentIndex) {
-                    step.className = 'step-icon completed';
-                    step.textContent = '✓';
-                } else if (index === currentIndex) {
-                    step.className = 'step-icon active';
-                    const icons = ['📋', '👨‍🍳', '🍽', '✨', '✓'];
-                    step.textContent = icons[index];
-                }
-            });
-        }
-        
-        function showStatusNotification(status) {
-            const notifications = {
-                'pending': trans.orderReceived,
-                'preparing': trans.nowPreparing,
-                'ready': trans.orderReady,
-                'served': trans.orderServed,
-                'completed': trans.orderCompleted
+
+        /* ── Show notification ──────────────────────────────── */
+        function showNotif(status) {
+            const msgs = {
+                pending: {
+                    icon: '📋',
+                    text: trans.orderReceived
+                },
+                preparing: {
+                    icon: '👨‍🍳',
+                    text: trans.nowPreparing
+                },
+                ready: {
+                    icon: '🍽',
+                    text: trans.orderReady
+                },
+                served: {
+                    icon: '✨',
+                    text: trans.orderServed
+                },
+                completed: {
+                    icon: '✓',
+                    text: trans.orderCompleted
+                },
             };
-            
-            if (!notifications[status]) return;
-            
-            const notification = document.getElementById('status-notification');
-            const text = document.getElementById('notification-text');
-            
-            text.textContent = notifications[status];
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 4000);
+            if (!msgs[status]) return;
+            showRawNotif(msgs[status].icon, msgs[status].text);
         }
-        
-        // Check for updates every 2 seconds (faster for immediate detection)
-        @if(!$order->is_checked_out)
-        document.addEventListener('DOMContentLoaded', function() {
-            setInterval(checkOrderStatus, 2000);
-        });
+
+        function showRawNotif(icon, text) {
+            const n = document.getElementById('notif');
+            document.getElementById('notif-icon').textContent = icon;
+            document.getElementById('notif-text').textContent = text;
+            n.classList.add('show');
+            setTimeout(() => n.classList.remove('show'), 4000);
+        }
+
+        /* ── Start polling ──────────────────────────────────── */
+        @if (!$order->is_checked_out)
+            document.addEventListener('DOMContentLoaded', () => {
+                setInterval(checkStatus, 2000);
+            });
         @endif
     </script>
 </body>
+
 </html>
