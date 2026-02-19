@@ -131,6 +131,20 @@
                 @enderror
             </div>
 
+            <div class="mb-6">
+                <label for="status" class="block text-sm font-medium text-gray-400 mb-2">Status <span class="text-amber-500">*</span></label>
+                <select name="status" id="status" required
+                    class="w-full px-4 py-3 bg-[#0f0f0f] border border-gray-700 rounded-lg text-white focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 transition-all">
+                    <option value="pending" {{ old('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="confirmed" {{ old('status') == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                    <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                    <option value="completed" {{ old('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                </select>
+                @error('status')
+                    <p class="text-red-400 text-sm mt-2">{{ $message }}</p>
+                @enderror
+            </div>
+
             <div class="flex items-center gap-4 pt-4 border-t border-gray-800">
                 <button type="submit" class="inline-flex items-center px-6 py-3 bg-amber-500 hover:bg-amber-600 text-[#0a0a0a] font-semibold text-sm rounded-lg transition-all duration-200">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

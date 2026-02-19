@@ -69,45 +69,53 @@ Route::post('/checkout-finalize', [CheckoutController::class, 'checkout'])
 
 // Admin Routes
 Route::prefix('admin')->name('admin.')->group(function () {
-    // Dashboard
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    // Authentication
+    Route::get('/login', [\App\Http\Controllers\Admin\AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [\App\Http\Controllers\Admin\AuthController::class, 'login'])->name('login.post');
+    Route::post('/logout', [\App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('logout');
+    
+    // Protected Routes (require authentication)
+    Route::middleware(['admin.auth'])->group(function () {
+        // Dashboard
+        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Categories CRUD
-    Route::resource('categories', CategoryController::class);
+        // Categories CRUD
+        Route::resource('categories', CategoryController::class);
 
-    // Items CRUD
-    Route::resource('items', ItemController::class)->except(['show']);
+        // Items CRUD
+        Route::resource('items', ItemController::class)->except(['show']);
 
-    // Tables CRUD
-    Route::resource('tables', TableController::class)->except(['show']);
+        // Tables CRUD
+        Route::resource('tables', TableController::class)->except(['show']);
 
-    // Reservations
-    Route::get('/reservations', [ReservationController::class, 'index'])->name('reservations.index');
-    Route::get('/reservations/create', [ReservationController::class, 'create'])->name('reservations.create');
-    Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');
-    Route::get('/reservations/{reservation}/edit', [ReservationController::class, 'edit'])->name('reservations.edit');
-    Route::put('/reservations/{reservation}', [ReservationController::class, 'update'])->name('reservations.update');
-    Route::delete('/reservations/{reservation}', [ReservationController::class, 'destroy'])->name('reservations.destroy');
-    Route::get('/reservations/timeline', [ReservationController::class, 'timeline'])->name('reservations.timeline');
+        // Reservations
+        Route::get('/reservations', [ReservationController::class, 'index'])->name('reservations.index');
+        Route::get('/reservations/create', [ReservationController::class, 'create'])->name('reservations.create');
+        Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');
+        Route::get('/reservations/{reservation}/edit', [ReservationController::class, 'edit'])->name('reservations.edit');
+        Route::put('/reservations/{reservation}', [ReservationController::class, 'update'])->name('reservations.update');
+        Route::delete('/reservations/{reservation}', [ReservationController::class, 'destroy'])->name('reservations.destroy');
+        Route::get('/reservations/timeline', [ReservationController::class, 'timeline'])->name('reservations.timeline');
 
-    // Orders
-    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('/orders/recent', [OrderController::class, 'recent'])->name('orders.recent');
-    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
-    Route::get('/orders/{order}/data', [OrderController::class, 'getOrderData'])->name('orders.data');
-    Route::post('/orders/{order}/mark-seen', [OrderController::class, 'markAsSeen'])->name('orders.mark-seen');
-    Route::post('/orders/{order}/items/{item}/mark-seen', [OrderController::class, 'markItemAsSeen'])->name('orders.mark-item-seen');
-    Route::post('/orders/{order}/end-service', [OrderController::class, 'endService'])->name('orders.end-service');
-    Route::get('/orders/{order}/add-items', [OrderController::class, 'addItems'])->name('orders.add-items');
-    Route::post('/orders/{order}/add-items', [OrderController::class, 'storeItems'])->name('orders.store-items');
-    Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
-    Route::post('/orders/{order}/print-receipt', [\App\Http\Controllers\Admin\PrintController::class, 'printReceipt'])->name('orders.print-receipt');
-    Route::post('/orders/{order}/print-kitchen', [\App\Http\Controllers\Admin\PrintController::class, 'printKitchen'])->name('orders.print-kitchen');
+        // Orders
+        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/recent', [OrderController::class, 'recent'])->name('orders.recent');
+        Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+        Route::get('/orders/{order}/data', [OrderController::class, 'getOrderData'])->name('orders.data');
+        Route::post('/orders/{order}/mark-seen', [OrderController::class, 'markAsSeen'])->name('orders.mark-seen');
+        Route::post('/orders/{order}/items/{item}/mark-seen', [OrderController::class, 'markItemAsSeen'])->name('orders.mark-item-seen');
+        Route::post('/orders/{order}/end-service', [OrderController::class, 'endService'])->name('orders.end-service');
+        Route::get('/orders/{order}/add-items', [OrderController::class, 'addItems'])->name('orders.add-items');
+        Route::post('/orders/{order}/add-items', [OrderController::class, 'storeItems'])->name('orders.store-items');
+        Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
+        Route::post('/orders/{order}/print-receipt', [\App\Http\Controllers\Admin\PrintController::class, 'printReceipt'])->name('orders.print-receipt');
+        Route::post('/orders/{order}/print-kitchen', [\App\Http\Controllers\Admin\PrintController::class, 'printKitchen'])->name('orders.print-kitchen');
 
-    // QR Codes
-    Route::get('/qr-codes', [QRController::class, 'generateAll'])->name('qr-codes');
-    Route::get('/qr-code-image/{token}', [QRController::class, 'generateQrImage'])->name('qr-code-image');
+        // QR Codes
+        Route::get('/qr-codes', [QRController::class, 'generateAll'])->name('qr-codes');
+        Route::get('/qr-code-image/{token}', [QRController::class, 'generateQrImage'])->name('qr-code-image');
 
-    // Taxes
-    Route::resource('taxes', TaxController::class);
+        // Taxes
+        Route::resource('taxes', TaxController::class);
+    });
 });

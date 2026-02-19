@@ -136,9 +136,13 @@
                     <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.orders.*') ? 'text-amber-500' : 'text-gray-500 group-hover:text-white' }}"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                            d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                            d="M7 12l3-3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
                     </svg>
                     <span class="text-sm font-medium">Orders</span>
+                    <!-- Notification Badge -->
+                    <span id="orders-notification-badge" class="hidden ml-2 px-2 py-0.5 text-xs font-bold bg-red-500 text-white rounded-full animate-pulse transition-all duration-300">
+                        0
+                    </span>
                 </a>
 
                 <a href="{{ route('admin.taxes.index') }}"
@@ -167,7 +171,20 @@
         <!-- Main Content -->
         <div class="flex-1 flex flex-col min-w-0 pt-16 lg:pt-0 bg-[#0f0f0f]">
             <!-- Top Header (Desktop only - simplified) -->
-            <!-- We remove the white header bar and integrate it into the dashboard content itself for the premium look -->
+        <header class="bg-[#1a1a1a] border-b border-gray-800 px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center">
+                <h1 class="text-xl font-semibold text-white">Admin Dashboard</h1>
+            </div>
+            <form action="{{ route('admin.logout') }}" method="POST" class="inline">
+                @csrf
+                <button type="submit" class="text-gray-400 hover:text-white transition-colors flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    <span class="text-sm">Logout</span>
+                </button>
+            </form>
+        </header>
 
             <!-- Main Content Area -->
             <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 lg:p-8">
@@ -188,9 +205,106 @@
                 @yield('content')
             </main>
         </div>
+        
+        <!-- Footer -->
+        <div class="fixed bottom-4 right-4 z-50">
+            <div class="bg-[#1a1a1a]/80 backdrop-blur-sm border border-gray-700/50 rounded-lg px-3 py-2 text-xs text-gray-400">
+                Powered By <span class="text-amber-500 font-semibold">Code De Luxe</span>
+            </div>
+        </div>
     </div>
 
     @stack('scripts')
+    
+    <!-- Order Notifications Script -->
+    @if(!request()->routeIs('admin.orders.*'))
+    <script>
+        let lastOrderCount = 0;
+        let notificationSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVohDbt2cBhAFl1gI');
+        
+        async function checkForNewOrders() {
+            try {
+                const response = await fetch('{{ route("admin.orders.recent") }}', {
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                const currentOrderCount = data.orders.length;
+                
+                // Check for new orders
+                if (currentOrderCount > lastOrderCount) {
+                    // Show notification badge
+                    const badge = document.getElementById('orders-notification-badge');
+                    if (badge) {
+                        badge.textContent = currentOrderCount - lastOrderCount;
+                        badge.classList.remove('hidden');
+                        
+                        // Play notification sound
+                        notificationSound.play().catch(e => console.log('Could not play sound:', e));
+                        
+                        // Show browser notification
+                        if ('Notification' in window && Notification.permission === 'granted') {
+                            new Notification('New Order Received', {
+                                body: `${currentOrderCount - lastOrderCount} new order(s) received`,
+                                icon: '/favicon.ico'
+                            });
+                        }
+                    }
+                }
+                
+                // Check for checkouts (orders with is_checked_out = true)
+                const checkedOutOrders = data.orders.filter(order => order.is_checked_out);
+                if (checkedOutOrders.length > 0) {
+                    const badge = document.getElementById('orders-notification-badge');
+                    if (badge && badge.classList.contains('hidden')) {
+                        badge.textContent = 'Checkout';
+                        badge.classList.remove('hidden');
+                        badge.classList.add('bg-green-500', 'animate-pulse');
+                        
+                        // Play different sound for checkout
+                        notificationSound.play().catch(e => console.log('Could not play sound:', e));
+                        
+                        // Show browser notification for checkout
+                        if ('Notification' in window && Notification.permission === 'granted') {
+                            new Notification('Order Checked Out', {
+                                body: `Table ${checkedOutOrders[0].table_number || 'Unknown'} - Order ready for payment`,
+                                icon: '/favicon.ico'
+                            });
+                        }
+                    }
+                }
+                
+                lastOrderCount = currentOrderCount;
+            } catch (error) {
+                console.error('Error checking for new orders:', error);
+            }
+        }
+        
+        // Request notification permission
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+        
+        // Check for new orders every 5 seconds
+        setInterval(checkForNewOrders, 5000);
+        
+        // Initial check
+        checkForNewOrders();
+        
+        // Reset notification badge when admin visits orders page
+        if (window.location.pathname.includes('/admin/orders')) {
+            const badge = document.getElementById('orders-notification-badge');
+            if (badge) {
+                badge.classList.add('hidden');
+                badge.classList.remove('bg-green-500');
+                badge.textContent = '0';
+            }
+        }
+    </script>
+    @endif
 </body>
 
 </html>

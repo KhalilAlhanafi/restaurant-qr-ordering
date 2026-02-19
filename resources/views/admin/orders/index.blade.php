@@ -103,9 +103,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                             </button>
-                            @if ($order->is_checked_out)
-                                <button onclick="endService({{ $order->id }}, this)" class="ml-3 text-red-400 hover:text-red-300 font-semibold transition-colors">End Service</button>
-                            @endif
+                            <button onclick="endService({{ $order->id }}, {{ $order->is_checked_out ? 'true' : 'false' }}, this)" class="ml-3 text-red-400 hover:text-red-300 font-semibold transition-colors">End Service</button>
                         </td>
                     </tr>
                 @empty
@@ -320,7 +318,7 @@
                         <button onclick="printOrder(${order.id}, 'kitchen')" class="ml-3 text-orange-400 hover:text-orange-300 transition-colors" title="Print Kitchen">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </button>
-                        ${order.is_checked_out ? `<button onclick="endService(${order.id}, this)" class="ml-3 text-red-400 hover:text-red-300 font-semibold transition-colors">End Service</button>` : ''}
+                        <button onclick="endService(${order.id}, ${order.is_checked_out}, this)" class="ml-3 text-red-400 hover:text-red-300 font-semibold transition-colors">End Service</button>
                     </td>
                 </tr>
             `;
@@ -371,7 +369,7 @@
                 // Add End Service button if not already present
                 if (!actionCell.querySelector('button[class*="text-red-400"]')) {
                     actionCell.insertAdjacentHTML('beforeend',
-                        `<button onclick="endService(${order.id}, this)" class="ml-3 text-red-400 hover:text-red-300 font-semibold transition-colors">End Service</button>`
+                        `<button onclick="endService(${order.id}, ${order.is_checked_out}, this)" class="ml-3 text-red-400 hover:text-red-300 font-semibold transition-colors">End Service</button>`
                     );
                 }
 
@@ -534,44 +532,8 @@
             }
         }
 
-        async function endService(orderId, btn) {
-            if (!confirm(
-                    'Are you sure you want to end service for this table? This will complete the order and free up the table.'
-                )) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`/admin/orders/${orderId}/end-service`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    // Remove the row from the table
-                    const row = document.getElementById(`order-${orderId}`);
-                    if (row) {
-                        row.remove();
-                    }
-                    // Remove from known orders
-                    knownOrderIds.delete(orderId);
-                } else {
-                    const errorText = await response.text();
-                    console.error('Error ending service:', response.status, errorText);
-                    alert('Failed to end service. Please try again.');
-                }
-            } catch (error) {
-                console.error('Error ending service:', error);
-                alert('Error: ' + error.message);
-            }
-        }
-
-        // Check for new orders every 3 seconds (simple polling, no WebSocket needed)
-        setInterval(checkForNewOrders, 3000);
+        // Poll for new orders every 2 seconds
+        setInterval(checkForNewOrders, 2000);
         checkForNewOrders();
 
         async function printOrder(id, type) {
@@ -628,8 +590,16 @@
         }
 
         // Function to end service for an order
-        async function endService(orderId, button) {
-            if (!confirm('Are you sure you want to end service for this order?')) {
+        async function endService(orderId, isCheckedOut, button) {
+            // Show appropriate confirmation message
+            let confirmMessage;
+            if (isCheckedOut) {
+                confirmMessage = 'Are you sure you want to end service for this order?';
+            } else {
+                confirmMessage = 'Customer hasn\'t checked out yet. Are you sure you want to end service?';
+            }
+
+            if (!confirm(confirmMessage)) {
                 return;
             }
 

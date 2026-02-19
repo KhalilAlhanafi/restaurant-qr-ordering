@@ -15,6 +15,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'identify.table' => \App\Http\Middleware\IdentifyTable::class,
             'set.locale' => \App\Http\Middleware\SetLocale::class,
+            'admin.auth' => \App\Http\Middleware\AdminAuth::class,
+            'customer.restrict' => \App\Http\Middleware\CustomerRestriction::class,
+        ]);
+        
+        // Apply customer restriction globally to all web routes except admin
+        $middleware->web(append: [
+            \App\Http\Middleware\CustomerRestriction::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

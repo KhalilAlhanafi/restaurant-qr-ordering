@@ -208,6 +208,14 @@ class CheckoutController extends Controller
             // Clear session data for new customer
             session()->forget(['table_id', 'table_number', 'qr_token', 'cart', 'locale']);
             
+            // Add flag to prevent admin access for this session
+            session(['was_customer' => true]);
+            
+            // Broadcast checkout event for admin notifications
+            if (class_exists('\App\Events\OrderStatusUpdated')) {
+                event(new \App\Events\OrderStatusUpdated($order, 'pending'));
+            }
+            
             return redirect()->route('order.confirmation', $order)
                 ->with('success', 'Order finalized! Thank you for dining with us.');
         }

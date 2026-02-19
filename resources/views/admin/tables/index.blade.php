@@ -46,14 +46,6 @@
                 </a>
             @endforeach
         </div>
-
-        <!-- Legend -->
-        <div class="flex flex-wrap gap-6 mt-6 pt-6 border-t border-gray-800">
-            <div class="flex items-center text-sm text-gray-400"><span class="w-4 h-4 bg-green-500/10 border border-green-500/50 rounded mr-2"></span> Available</div>
-            <div class="flex items-center text-sm text-gray-400"><span class="w-4 h-4 bg-red-500/10 border border-red-500/50 rounded mr-2"></span> Occupied</div>
-            <div class="flex items-center text-sm text-gray-400"><span class="w-4 h-4 bg-yellow-500/10 border border-yellow-500/50 rounded mr-2"></span> Reserved</div>
-            <div class="flex items-center text-sm text-gray-400"><span class="w-4 h-4 bg-gray-500/10 border border-gray-500/50 rounded mr-2"></span> Cleaning</div>
-        </div>
     </div>
 
     <!-- Table List -->
