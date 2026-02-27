@@ -88,7 +88,8 @@
 
             <nav class="mt-8 px-4 space-y-2 overflow-y-auto h-[calc(100vh-4rem)] lg:h-auto pb-20">
                 <a href="{{ route('admin.dashboard') }}"
-                    class="flex items-center px-4 py-3 rounded-lg group transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-[#1a1a1a] text-amber-500 border-l-2 border-amber-500' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
+                    class="flex items-center px-4 py-3 rounded-lg group transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-[#1a1a1a] text-amber-500 border-l-2 border-amber-500' : 'text-gray-400 hover:text-white hover:bg-white/5' }}"
+                    onclick="resetNotifications()">
                     <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.dashboard') ? 'text-amber-500' : 'text-gray-500 group-hover:text-white' }}"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -99,7 +100,8 @@
                 </a>
 
                 <a href="{{ route('admin.categories.index') }}"
-                    class="flex items-center px-4 py-3 rounded-lg group transition-all duration-200 {{ request()->routeIs('admin.items.*', 'admin.categories.*') ? 'bg-[#1a1a1a] text-amber-500 border-l-2 border-amber-500' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
+                    class="flex items-center px-4 py-3 rounded-lg group transition-all duration-200 {{ request()->routeIs('admin.items.*', 'admin.categories.*') ? 'bg-[#1a1a1a] text-amber-500 border-l-2 border-amber-500' : 'text-gray-400 hover:text-white hover:bg-white/5' }}"
+                    onclick="resetNotifications()">
                     <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.items.*', 'admin.categories.*') ? 'text-amber-500' : 'text-gray-500 group-hover:text-white' }}"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -110,18 +112,20 @@
                 </a>
 
                 <a href="{{ route('admin.tables.index') }}"
-                    class="flex items-center px-4 py-3 rounded-lg group transition-all duration-200 {{ request()->routeIs('admin.tables.*') ? 'bg-[#1a1a1a] text-amber-500 border-l-2 border-amber-500' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
+                    class="flex items-center px-4 py-3 rounded-lg group transition-all duration-200 {{ request()->routeIs('admin.tables.*') ? 'bg-[#1a1a1a] text-amber-500 border-l-2 border-amber-500' : 'text-gray-400 hover:text-white hover:bg-white/5' }}"
+                    onclick="resetNotifications()">
                     <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.tables.*') ? 'text-amber-500' : 'text-gray-500 group-hover:text-white' }}"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3M2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
                         </path>
                     </svg>
                     <span class="text-sm font-medium">Tables</span>
                 </a>
 
                 <a href="{{ route('admin.reservations.index') }}"
-                    class="flex items-center px-4 py-3 rounded-lg group transition-all duration-200 {{ request()->routeIs('admin.reservations.*') ? 'bg-[#1a1a1a] text-amber-500 border-l-2 border-amber-500' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
+                    class="flex items-center px-4 py-3 rounded-lg group transition-all duration-200 {{ request()->routeIs('admin.reservations.*') ? 'bg-[#1a1a1a] text-amber-500 border-l-2 border-amber-500' : 'text-gray-400 hover:text-white hover:bg-white/5' }}"
+                    onclick="resetNotifications()">
                     <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.reservations.*') ? 'text-amber-500' : 'text-gray-500 group-hover:text-white' }}"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -132,7 +136,8 @@
                 </a>
 
                 <a href="{{ route('admin.orders.index') }}"
-                    class="flex items-center px-4 py-3 rounded-lg group transition-all duration-200 {{ request()->routeIs('admin.orders.*') ? 'bg-[#1a1a1a] text-amber-500 border-l-2 border-amber-500' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
+                    class="flex items-center px-4 py-3 rounded-lg group transition-all duration-200 {{ request()->routeIs('admin.orders.*') ? 'bg-[#1a1a1a] text-amber-500 border-l-2 border-amber-500' : 'text-gray-400 hover:text-white hover:bg-white/5' }}"
+                    onclick="resetNotifications();">
                     <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.orders.*') ? 'text-amber-500' : 'text-gray-500 group-hover:text-white' }}"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -146,17 +151,20 @@
                 </a>
 
                 <a href="{{ route('admin.taxes.index') }}"
-                    class="flex items-center px-4 py-3 rounded-lg group transition-all duration-200 {{ request()->routeIs('admin.taxes.*') ? 'bg-[#1a1a1a] text-amber-500 border-l-2 border-amber-500' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
+                    class="flex items-center px-4 py-3 rounded-lg group transition-all duration-200 {{ request()->routeIs('admin.taxes.*') ? 'bg-[#1a1a1a] text-amber-500 border-l-2 border-amber-500' : 'text-gray-400 hover:text-white hover:bg-white/5' }}"
+                    onclick="resetNotifications()">
                     <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.taxes.*') ? 'text-amber-500' : 'text-gray-500 group-hover:text-white' }}"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                            d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"></path>
+                            d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z">
+                        </path>
                     </svg>
                     <span class="text-sm font-medium">Taxes</span>
                 </a>
 
                 <a href="{{ route('admin.qr-codes') }}"
-                    class="flex items-center px-4 py-3 rounded-lg group transition-all duration-200 {{ request()->routeIs('admin.qr-codes') ? 'bg-[#1a1a1a] text-amber-500 border-l-2 border-amber-500' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
+                    class="flex items-center px-4 py-3 rounded-lg group transition-all duration-200 {{ request()->routeIs('admin.qr-codes') ? 'bg-[#1a1a1a] text-amber-500 border-l-2 border-amber-500' : 'text-gray-400 hover:text-white hover:bg-white/5' }}"
+                    onclick="resetNotifications()">
                     <svg class="w-5 h-5 mr-3 {{ request()->routeIs('admin.qr-codes') ? 'text-amber-500' : 'text-gray-500 group-hover:text-white' }}"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -222,6 +230,9 @@
         let lastOrderCount = 0;
         let notificationSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVohDbt2cBhAFl1gI');
         
+        // Get seen orders from localStorage or create new Set
+        let seenOrderIds = new Set(JSON.parse(localStorage.getItem('seenOrderIds') || '[]'));
+        
         async function checkForNewOrders() {
             try {
                 const response = await fetch('{{ route("admin.orders.recent") }}', {
@@ -233,13 +244,17 @@
                 
                 const data = await response.json();
                 const currentOrderCount = data.orders.length;
+                const currentOrderIds = data.orders.map(order => order.id);
+                
+                // Find truly new orders (not seen before)
+                const newOrders = currentOrderIds.filter(id => !seenOrderIds.has(id));
                 
                 // Check for new orders
-                if (currentOrderCount > lastOrderCount) {
+                if (newOrders.length > 0) {
                     // Show notification badge
                     const badge = document.getElementById('orders-notification-badge');
                     if (badge) {
-                        badge.textContent = currentOrderCount - lastOrderCount;
+                        badge.textContent = newOrders.length;
                         badge.classList.remove('hidden');
                         
                         // Play notification sound
@@ -248,12 +263,16 @@
                         // Show browser notification
                         if ('Notification' in window && Notification.permission === 'granted') {
                             new Notification('New Order Received', {
-                                body: `${currentOrderCount - lastOrderCount} new order(s) received`,
+                                body: `${newOrders.length} new order(s) received`,
                                 icon: '/favicon.ico'
                             });
                         }
                     }
                 }
+                
+                // Update seen orders and save to localStorage
+                currentOrderIds.forEach(id => seenOrderIds.add(id));
+                localStorage.setItem('seenOrderIds', JSON.stringify(Array.from(seenOrderIds)));
                 
                 // Check for checkouts (orders with is_checked_out = true)
                 const checkedOutOrders = data.orders.filter(order => order.is_checked_out);
@@ -283,6 +302,27 @@
             }
         }
         
+        // Function to clear notifications
+        function clearNotifications() {
+            const badge = document.getElementById('orders-notification-badge');
+            if (badge) {
+                badge.classList.add('hidden');
+                badge.classList.remove('bg-green-500');
+                badge.textContent = '0';
+            }
+        }
+        
+        // Function to reset seen orders (when navigating to other sections)
+        function resetNotifications() {
+            clearNotifications();
+        }
+        
+        // Function to clear seen orders completely
+        function clearSeenOrders() {
+            seenOrderIds.clear();
+            localStorage.removeItem('seenOrderIds');
+        }
+        
         // Request notification permission
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
@@ -294,14 +334,9 @@
         // Initial check
         checkForNewOrders();
         
-        // Reset notification badge when admin visits orders page
+        // Only clear notification badge when visiting orders page, but keep seen orders
         if (window.location.pathname.includes('/admin/orders')) {
-            const badge = document.getElementById('orders-notification-badge');
-            if (badge) {
-                badge.classList.add('hidden');
-                badge.classList.remove('bg-green-500');
-                badge.textContent = '0';
-            }
+            resetNotifications();
         }
     </script>
     @endif

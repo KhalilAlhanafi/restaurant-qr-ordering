@@ -295,6 +295,11 @@
                 // Update counts
                 updateUnseenCounts();
 
+                // Clear notification badge if no more unseen items
+                if (document.querySelectorAll('[data-is-unseen="true"]').length === 0) {
+                    clearNotificationBadge();
+                }
+
                 // Trigger storage event to update main orders list
                 const remainingUnseen = document.querySelectorAll('[data-is-unseen="true"]').length;
                 localStorage.setItem('orderSeenUpdated', JSON.stringify({
@@ -539,6 +544,23 @@
 
     // Check for updates every 3 seconds
     setInterval(checkForOrderUpdates, 3000);
+
+    // Clear notification badge when viewing order details
+    function clearNotificationBadge() {
+        if (typeof clearNotifications === 'function') {
+            clearNotifications();
+        }
+    }
+
+    // Clear badge on page load
+    clearNotificationBadge();
+
+    // Also clear badge when marking all as seen
+    const originalMarkAllAsSeen = markAllAsSeen;
+    markAllAsSeen = async function() {
+        await originalMarkAllAsSeen.call(this);
+        clearNotificationBadge();
+    };
 
     async function printOrder(type) {
         let url = type === 'receipt' ? `/admin/orders/${orderId}/print-receipt` :
