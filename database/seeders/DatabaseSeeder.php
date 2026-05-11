@@ -15,12 +15,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::firstOrCreate(
-            ['email' => 'admin@restaurant.com'],
-            ['name' => 'Admin User', 'password' => bcrypt('password')]
-        );
-
         $this->call([
+            UserSeeder::class,
             ItemCategorySeeder::class,
             RestaurantTableSeeder::class,
         ]);

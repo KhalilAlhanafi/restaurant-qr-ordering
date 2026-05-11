@@ -16,19 +16,28 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'username' => 'required|string',
+            'email' => 'required|email',
             'password' => 'required|string',
         ]);
 
-        // Custom authentication logic
-        if ($credentials['username'] === 'admin' && $credentials['password'] === 'Rest2026admin') {
-            // Clear any customer flags and create a session for admin
+        if (Auth::guard('web')->attempt($credentials)) {
+            $request->session()->regenerate();
+
+            // Clear any customer flags
             session()->forget(['was_customer', 'table_id', 'table_number', 'qr_token', 'cart', 'locale']);
             session(['admin_authenticated' => true, 'admin_logged_in' => true]);
-            
+
+            $user = Auth::guard('web')->user();
+
+            if ($user->role === 'admin') {
+                $redirect = route('admin.dashboard');
+            } else {
+                $redirect = route('admin.stations.index', $user->station);
+            }
+
             return response()->json([
                 'success' => true,
-                'redirect' => route('admin.dashboard')
+                'redirect' => $redirect
             ]);
         }
 
@@ -40,8 +49,11 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        Auth::guard('web')->logout();
         session()->forget(['admin_authenticated', 'admin_logged_in']);
-        
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         return redirect()->route('admin.login');
     }
 }

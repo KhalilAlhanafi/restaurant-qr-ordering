@@ -658,17 +658,27 @@
                 total += sub;
                 count += item.quantity;
                 html += `
-                    <div class="cart-row">
-                        <div class="row-left">
-                            <div class="row-name">${item.name}</div>
-                            <div class="row-controls">
-                                <button class="qty-btn" onclick="updateQty(${idx}, -1)">−</button>
-                                <span class="qty-num">${item.quantity}</span>
-                                <button class="qty-btn" onclick="updateQty(${idx}, 1)">+</button>
-                                <span class="remove-btn" onclick="removeItem(${idx})">{{ __('menu.remove') }}</span>
+                    <div class="cart-row" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; width: 100%;">
+                            <div class="row-left">
+                                <div class="row-name" style="margin-bottom: 8px;">${item.name}</div>
+                                <div class="row-controls">
+                                    <button class="qty-btn" onclick="updateQty(${idx}, -1)">−</button>
+                                    <span class="qty-num">${item.quantity}</span>
+                                    <button class="qty-btn" onclick="updateQty(${idx}, 1)">+</button>
+                                    <span class="remove-btn" onclick="removeItem(${idx})">{{ __('menu.remove') }}</span>
+                                </div>
                             </div>
+                            <div class="row-price">${item.show_price ? '$' + sub.toFixed(2) : '—'}</div>
                         </div>
-                        <div class="row-price">${item.show_price ? '$' + sub.toFixed(2) : '—'}</div>
+                        <div class="item-note-edit" style="width: 100%;">
+                            <textarea 
+                                class="notes-textarea" 
+                                style="min-height: 44px; font-size: 12px; padding: 10px; border-radius: 10px;" 
+                                placeholder="{{ __('menu.edit_item_note') }}"
+                                onchange="updateNote(${idx}, this.value)"
+                            >${item.note || ''}</textarea>
+                        </div>
                     </div>
                 `;
             });
@@ -691,7 +701,7 @@
                         'X-CSRF-TOKEN': CSRF
                     },
                     body: JSON.stringify({
-                        item_id: cart[idx].id,
+                        index: idx,
                         quantity: newQty
                     })
                 });
@@ -705,7 +715,30 @@
             }
         }
 
-        /* ─────────────── Remove item ────────────── */
+        /* ─────────────── Update note ─────────────── */
+        async function updateNote(idx, note) {
+            try {
+                const res = await fetch('/cart/update', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': CSRF
+                    },
+                    body: JSON.stringify({
+                        index: idx,
+                        note: note
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    cart = data.cart;
+                    // No full render here to keep focus/state if needed, but for now render is fine
+                    // render();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
         async function removeItem(idx) {
             try {
                 const res = await fetch('/cart/remove', {
@@ -715,7 +748,7 @@
                         'X-CSRF-TOKEN': CSRF
                     },
                     body: JSON.stringify({
-                        item_id: cart[idx].id
+                        index: idx
                     })
                 });
                 const data = await res.json();
@@ -742,16 +775,38 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': CSRF
+                        'X-CSRF-TOKEN': CSRF,
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({
                         items: cart.map(i => ({
                             id: i.id,
-                            quantity: i.quantity
+                            quantity: i.quantity,
+                            notes: i.note
                         })),
                         special_requests: notes
                     })
                 });
+
+                const contentType = res.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    // Server returned HTML (likely redirect to login or error page)
+                    const text = await res.text();
+                    console.error('Non-JSON response:', text.substring(0, 200));
+
+                    if (res.status === 419 || text.includes('csrf') || text.includes('login')) {
+                        toast('Session expired. Please refresh the page and try again.', true);
+                    } else if (res.status === 200 && text.includes('<!DOCTYPE')) {
+                        toast('Server returned an unexpected page. Please refresh and try again.', true);
+                    } else {
+                        toast('Server error: ' + res.status + '. Please try again.', true);
+                    }
+                    btn.disabled = false;
+                    btn.innerHTML =
+                        '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> {{ __('menu.place_order') }}';
+                    return;
+                }
+
                 const data = await res.json();
 
                 if (res.ok && data.success) {
@@ -763,7 +818,8 @@
                         '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> {{ __('menu.place_order') }}';
                 }
             } catch (e) {
-                toast(e.message, true);
+                console.error('Place order error:', e);
+                toast('Network error. Please check your connection and try again.', true);
                 btn.disabled = false;
                 btn.innerHTML =
                     '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> {{ __('menu.place_order') }}';

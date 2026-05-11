@@ -26,9 +26,12 @@
             <a href="{{ route('admin.categories.show', $category) }}"
                 class="group relative bg-[#1a1a1a] border border-gray-800 hover:border-amber-500/50 rounded-xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/10">
                 <!-- Status Badge -->
-                <div class="absolute top-4 right-4">
+                <div class="absolute top-4 right-4 flex flex-col items-end gap-2">
                     <span class="px-2 py-1 text-[10px] uppercase tracking-wider rounded-full {{ $category->is_active ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20' }}">
                         {{ $category->is_active ? 'Active' : 'Inactive' }}
+                    </span>
+                    <span class="px-2 py-0.5 text-[9px] uppercase tracking-widest rounded bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                        {{ $category->station }}
                     </span>
                 </div>
 

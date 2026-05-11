@@ -89,4 +89,13 @@ class ItemController extends Controller
         $item->delete();
         return redirect()->route('admin.categories.show', $categoryId)->with('success', 'Item deleted successfully');
     }
+
+    public function toggleAvailability(Item $item)
+    {
+        $item->is_available = !$item->is_available;
+        $item->save();
+        
+        $status = $item->is_available ? 'available' : 'unavailable';
+        return redirect()->back()->with('success', "Item marked as {$status}");
+    }
 }

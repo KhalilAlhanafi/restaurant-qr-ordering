@@ -35,7 +35,9 @@ class CustomerRestriction
                 'checkout.finalize',
                 'qr.scan',
                 'qr.required',
-                'language.set'
+                'language.set',
+                'waiter.call',
+                'order.rate'
             ];
 
             // If trying to access other non-customer routes, redirect to menu

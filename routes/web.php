@@ -6,11 +6,14 @@ use App\Http\Controllers\Admin\ItemController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ReservationController;
 use App\Http\Controllers\Admin\TableController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\TaxController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\QRController;
+use App\Http\Controllers\RatingController;
+use App\Http\Controllers\WaiterCallController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -66,6 +69,14 @@ Route::get('/order-confirmation/{order}', [CheckoutController::class, 'confirmat
 Route::post('/checkout-finalize', [CheckoutController::class, 'checkout'])
     ->middleware(['identify.table', 'set.locale'])
     ->name('checkout.finalize');
+Route::post('/order-rate', [RatingController::class, 'store'])
+    ->middleware(['identify.table', 'set.locale'])
+    ->name('order.rate');
+
+// Call Waiter (customer side)
+Route::post('/call-waiter', [WaiterCallController::class, 'store'])
+    ->middleware(['identify.table', 'set.locale'])
+    ->name('waiter.call');
 
 // Admin Routes
 Route::prefix('admin')->name('admin.')->group(function () {
@@ -73,8 +84,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [\App\Http\Controllers\Admin\AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [\App\Http\Controllers\Admin\AuthController::class, 'login'])->name('login.post');
     Route::post('/logout', [\App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('logout');
-    
-    // Protected Routes (require authentication)
+
+    // Admin-only Routes (require admin role)
     Route::middleware(['admin.auth'])->group(function () {
         // Dashboard
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -84,6 +95,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Items CRUD
         Route::resource('items', ItemController::class)->except(['show']);
+        Route::post('/items/{item}/toggle-availability', [ItemController::class, 'toggleAvailability'])->name('items.toggle-availability');
 
         // Tables CRUD
         Route::resource('tables', TableController::class)->except(['show']);
@@ -110,6 +122,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
         Route::post('/orders/{order}/print-receipt', [\App\Http\Controllers\Admin\PrintController::class, 'printReceipt'])->name('orders.print-receipt');
         Route::post('/orders/{order}/print-kitchen', [\App\Http\Controllers\Admin\PrintController::class, 'printKitchen'])->name('orders.print-kitchen');
+        Route::post('/orders/{order}/print-station/{station}', [\App\Http\Controllers\Admin\PrintController::class, 'printStation'])->name('orders.print-station');
 
         // QR Codes
         Route::get('/qr-codes', [QRController::class, 'generateAll'])->name('qr-codes');
@@ -117,5 +130,24 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Taxes
         Route::resource('taxes', TaxController::class);
+
+        // Reports
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/export/csv', [ReportController::class, 'exportCsv'])->name('reports.export.csv');
+        Route::get('/reports/export/pdf', [ReportController::class, 'exportPdf'])->name('reports.export.pdf');
+
+        // Ratings
+        Route::resource('ratings', \App\Http\Controllers\Admin\RatingController::class);
+
+        // Waiter Calls
+        Route::get('/waiter-calls/pending', [WaiterCallController::class, 'pending'])->name('waiter-calls.pending');
+        Route::post('/waiter-calls/{waiterCall}/resolve', [WaiterCallController::class, 'resolve'])->name('waiter-calls.resolve');
+    });
+
+    // Station Routes (require station auth - admin or matching station user)
+    Route::middleware(['station.auth'])->group(function () {
+        Route::get('/stations/{station}', [\App\Http\Controllers\Admin\StationController::class, 'index'])->name('stations.index');
+        Route::get('/stations/{station}/data', [\App\Http\Controllers\Admin\StationController::class, 'getOrders'])->name('stations.data');
+        Route::post('/stations/{order}/items/{item}/mark-seen', [\App\Http\Controllers\Admin\OrderController::class, 'markItemAsSeen'])->name('stations.mark-item-seen');
     });
 });

@@ -902,6 +902,172 @@
                 padding: 20px 24px;
             }
         }
+
+        /* ─── Call Waiter FAB ──────────────────────────────────── */
+        .call-waiter-fab {
+            position: fixed;
+            bottom: 24px;
+            left: 20px;
+            z-index: 860;
+            height: 44px;
+            padding: 0 18px;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border: none;
+            box-shadow: 0 6px 24px rgba(239, 68, 68, 0.45), 0 0 0 0 rgba(239, 68, 68, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: fab-pulse 2.5s infinite;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .call-waiter-fab:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(239, 68, 68, 0.55);
+        }
+
+        .call-waiter-fab:active {
+            transform: scale(0.95);
+        }
+
+        .call-waiter-fab.sent {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            box-shadow: 0 6px 24px rgba(34, 197, 94, 0.4);
+            animation: none;
+            pointer-events: none;
+        }
+
+        .call-waiter-fab.cooldown {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            box-shadow: 0 4px 16px rgba(107, 114, 128, 0.3);
+            animation: none;
+            pointer-events: none;
+        }
+
+        @keyframes fab-pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 6px 24px rgba(239, 68, 68, 0.45), 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 6px 24px rgba(239, 68, 68, 0.45), 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+        }
+
+        /* Call Waiter Confirmation Drawer */
+        .waiter-drawer-body {
+            padding: 28px 24px 36px;
+            text-align: center;
+        }
+
+        .waiter-icon-wrap {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .waiter-icon-wrap svg {
+            width: 36px;
+            height: 36px;
+            color: #ef4444;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.8;
+        }
+
+        .waiter-icon-wrap.success {
+            background: rgba(34, 197, 94, 0.12);
+        }
+
+        .waiter-icon-wrap.success svg {
+            color: #22c55e;
+        }
+
+        .waiter-drawer-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 8px;
+        }
+
+        .waiter-drawer-desc {
+            font-size: 13px;
+            color: var(--gray);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .waiter-table-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 16px;
+            background: var(--surface2);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gold);
+            margin-bottom: 24px;
+        }
+
+        .waiter-confirm-btn {
+            width: 100%;
+            padding: 16px;
+            background: #ef4444;
+            border: none;
+            border-radius: 14px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Montserrat', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .waiter-confirm-btn:hover {
+            background: #dc2626;
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+        }
+
+        .waiter-cancel-btn {
+            width: 100%;
+            padding: 14px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            color: var(--gray);
+            font-size: 14px;
+            font-weight: 500;
+            font-family: 'Montserrat', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            margin-top: 10px;
+        }
+
+        .waiter-cancel-btn:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            color: var(--white);
+        }
     </style>
 </head>
 
@@ -1046,7 +1212,20 @@
         <div class="drawer-body">
             <h2 class="drawer-title" id="drawer-title"></h2>
             <div class="drawer-price" id="drawer-price"></div>
-            <p class="drawer-desc" id="drawer-desc"></p>
+            <div class="drawer-desc" id="drawer-desc"></div>
+
+            <!-- Specific Note Section -->
+            <div style="margin-bottom: 24px;">
+                <label for="item-note"
+                    style="display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; letter-spacing: 1px;">
+                    {{ __('menu.special_requests') }}
+                </label>
+                <textarea id="item-note" placeholder="{{ __('menu.add_note_placeholder') ?? 'Extra sauce, no onions, etc.' }}"
+                    style="width: 100%; background: rgba(255, 255, 255, 0.05); border: 1.5px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 12px; color: var(--white); font-family: 'Montserrat', sans-serif; font-size: 13px; resize: none; transition: border-color 0.2s ease;"
+                    rows="2" onfocus="this.style.borderColor='var(--gold)'"
+                    onblur="this.style.borderColor='rgba(255, 255, 255, 0.1)'"></textarea>
+            </div>
+
             <div class="qty-row">
                 <button class="qty-btn" onclick="changeQty(-1)">−</button>
                 <span class="qty-val" id="modal-qty">1</span>
@@ -1089,6 +1268,52 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- CALL WAITER FAB                                        -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <button class="call-waiter-fab" id="call-waiter-fab" onclick="openWaiterDrawer()"
+        title="{{ __('menu.call_waiter') }}">
+        <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+        {{ __('menu.call_waiter_fab') }}
+    </button>
+
+    <!-- CALL WAITER CONFIRMATION DRAWER -->
+    <div class="overlay" id="waiter-overlay" onclick="closeWaiterDrawer()"></div>
+    <div class="drawer" id="waiter-drawer">
+        <div class="drawer-handle"></div>
+        <div class="waiter-drawer-body">
+            <div class="waiter-icon-wrap" id="waiter-icon-wrap">
+                <svg viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+            </div>
+            <h2 class="waiter-drawer-title" id="waiter-drawer-title">{{ __('menu.call_waiter') }}</h2>
+            <p class="waiter-drawer-desc" id="waiter-drawer-desc">{{ __('menu.call_waiter_desc') }}</p>
+            <div class="waiter-table-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16" />
+                </svg>
+                {{ __('menu.table') }} {{ $table->table_number }}
+            </div>
+            <button class="waiter-confirm-btn" id="waiter-confirm-btn" onclick="sendWaiterCall()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                {{ __('menu.call_waiter_confirm') }}
+            </button>
+            <button class="waiter-cancel-btn"
+                onclick="closeWaiterDrawer()">{{ __('menu.call_waiter_cancel') }}</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
     <!-- SCRIPT                                                  -->
     <!-- ═══════════════════════════════════════════════════════ -->
     <script>
@@ -1099,7 +1324,8 @@
             itemAddedSingle: "{{ __('menu.item_added_single') }}",
             orderEmpty: "{{ __('menu.your_cart_is_empty') }}",
             qtyLabel: "{{ __('menu.qty') }}",
-            errorAdding: "{{ __('menu.error_adding_item') }}"
+            errorAdding: "{{ __('menu.error_adding_item') }}",
+            callWaiterFab: "{{ __('menu.call_waiter_fab') }}"
         };
         const CSRF = document.querySelector('meta[name="csrf-token"]').content;
         let cart = [];
@@ -1177,8 +1403,9 @@
             document.getElementById('drawer-title').textContent = activeItem.name;
             document.getElementById('drawer-price').textContent =
                 activeItem.show_price ? `$${parseFloat(activeItem.price).toFixed(2)}` : '';
-            document.getElementById('drawer-desc').textContent =
+            document.getElementById('drawer-desc').innerHTML =
                 activeItem.description || TRANSLATIONS.noDescription;
+            document.getElementById('item-note').value = ''; // Clear note on open
             updateDrawerTotal();
 
             document.getElementById('item-overlay').classList.add('active');
@@ -1208,7 +1435,8 @@
 
         async function addFromDrawer() {
             if (!activeItem) return;
-            await addToCart(activeItem.id, modalQty);
+            const note = document.getElementById('item-note').value;
+            await addToCart(activeItem.id, modalQty, note);
             closeItem();
         }
 
@@ -1218,7 +1446,7 @@
         }
 
         /* ── Cart API ── */
-        async function addToCart(itemId, qty = 1) {
+        async function addToCart(itemId, qty = 1, note = '') {
             try {
                 const res = await fetch('/cart/add', {
                     method: 'POST',
@@ -1228,7 +1456,8 @@
                     },
                     body: JSON.stringify({
                         item_id: itemId,
-                        quantity: qty
+                        quantity: qty,
+                        note: note
                     })
                 });
                 const data = await res.json();
@@ -1259,10 +1488,15 @@
             const bar = document.getElementById('bottom-bar');
             const badge = document.getElementById('cart-badge');
             const total = document.getElementById('bar-total');
+            const waiterFab = document.getElementById('call-waiter-fab');
 
             if (!cart || cart.length === 0) {
                 bar.classList.remove('visible');
                 badge.style.display = 'none';
+                // Move waiter FAB back to original position
+                if (waiterFab) {
+                    waiterFab.style.bottom = '24px';
+                }
                 return;
             }
 
@@ -1274,6 +1508,11 @@
             badge.textContent = count;
             badge.style.display = 'flex';
             bar.classList.add('visible');
+
+            // Move waiter FAB up to avoid covering cart
+            if (waiterFab) {
+                waiterFab.style.bottom = '90px';
+            }
         }
 
         /* ── Show cart drawer ── */
@@ -1291,12 +1530,15 @@
                     const sub = item.show_price ? item.price * item.quantity : 0;
                     total += sub;
                     html += `
-                        <div class="c-item">
-                            <div>
-                                <div class="c-name">${item.name}</div>
-                                <div class="c-qty">${TRANSLATIONS.qtyLabel}: ${item.quantity}</div>
+                        <div class="c-item" style="display: flex; flex-direction: column; align-items: stretch;">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <div class="c-name">${item.name}</div>
+                                    <div class="c-qty">${TRANSLATIONS.qtyLabel}: ${item.quantity}</div>
+                                    ${item.note ? `<div style="font-size: 11px; color: var(--gold); font-style: italic; margin-top: 2px;">Note: ${item.note}</div>` : ''}
+                                </div>
+                                <div class="c-price">$${sub.toFixed(2)}</div>
                             </div>
-                            <div class="c-price">$${sub.toFixed(2)}</div>
                         </div>`;
                 });
                 list.innerHTML = html;
@@ -1341,11 +1583,111 @@
                 if (e.touches[0].clientY - swipeY > 90 && drawer.scrollTop === 0) {
                     if (drawer.id === 'item-drawer') closeItem();
                     if (drawer.id === 'cart-drawer') closeCart();
+                    if (drawer.id === 'waiter-drawer') closeWaiterDrawer();
                 }
             }, {
                 passive: true
             });
         });
+
+        /* ── Call Waiter ── */
+        let waiterCooldown = false;
+
+        function openWaiterDrawer() {
+            if (waiterCooldown) return;
+            // Reset to default state
+            document.getElementById('waiter-icon-wrap').className = 'waiter-icon-wrap';
+            document.getElementById('waiter-icon-wrap').innerHTML =
+                '<svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>';
+            document.getElementById('waiter-drawer-title').textContent = "{{ __('menu.call_waiter') }}";
+            document.getElementById('waiter-drawer-desc').textContent = "{{ __('menu.call_waiter_desc') }}";
+            document.getElementById('waiter-confirm-btn').style.display = 'flex';
+            document.getElementById('waiter-overlay').classList.add('active');
+            document.getElementById('waiter-drawer').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeWaiterDrawer() {
+            document.getElementById('waiter-overlay').classList.remove('active');
+            document.getElementById('waiter-drawer').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        async function sendWaiterCall() {
+            const btn = document.getElementById('waiter-confirm-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span>{{ __('menu.call_waiter_sending') }}</span>';
+
+            try {
+                const res = await fetch('/call-waiter', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': CSRF
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error('Server error: ' + res.status);
+                }
+
+                const data = await res.json();
+
+                if (data.success) {
+                    // Show success state
+                    document.getElementById('waiter-icon-wrap').className = 'waiter-icon-wrap success';
+                    document.getElementById('waiter-icon-wrap').innerHTML =
+                        '<svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
+
+                    if (data.message === 'already_sent') {
+                        document.getElementById('waiter-drawer-title').textContent =
+                            "{{ __('menu.call_waiter_already') }}";
+                        document.getElementById('waiter-drawer-desc').textContent =
+                            "{{ __('menu.call_waiter_already_desc') }}";
+                    } else {
+                        document.getElementById('waiter-drawer-title').textContent =
+                            "{{ __('menu.call_waiter_sent') }}";
+                        document.getElementById('waiter-drawer-desc').textContent =
+                            "{{ __('menu.call_waiter_sent_desc') }}";
+                    }
+                    btn.style.display = 'none';
+
+                    // Update FAB
+                    const fab = document.getElementById('call-waiter-fab');
+                    fab.classList.add('sent');
+                    fab.innerHTML =
+                        '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> ' +
+                        TRANSLATIONS.callWaiterFab;
+
+                    // Auto close after 2s
+                    setTimeout(() => closeWaiterDrawer(), 2000);
+
+                    // Cooldown 30s
+                    waiterCooldown = true;
+                    setTimeout(() => {
+                        waiterCooldown = false;
+                        fab.classList.remove('sent', 'cooldown');
+                        fab.innerHTML =
+                            '<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg> ' +
+                            TRANSLATIONS.callWaiterFab;
+                    }, 30000);
+
+                    // Change to cooldown state after 3s
+                    setTimeout(() => {
+                        fab.classList.remove('sent');
+                        fab.classList.add('cooldown');
+                    }, 3000);
+                }
+            } catch (e) {
+                console.error(e);
+                showToast("{{ __('menu.call_waiter_error') }}", true);
+                closeWaiterDrawer();
+            } finally {
+                btn.disabled = false;
+            }
+        }
     </script>
 </body>
 

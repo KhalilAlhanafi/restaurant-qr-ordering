@@ -109,25 +109,33 @@ class PrintService
         }
     }
 
-    public function printKitchenOrder(Order $order, $newItemsOnly = false)
+    public function printStationOrder(Order $order, $station, $newItemsOnly = false)
     {
         if (!$this->connect()) {
-            $this->logToSimulation($order, 'KITCHEN', $newItemsOnly);
+            $this->logToSimulation($order, strtoupper($station), $newItemsOnly);
             return false;
         }
 
         try {
             $this->printer->setJustification(Printer::JUSTIFY_CENTER);
             $this->printer->selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
-            $this->printer->text("KITCHEN ORDER\n");
+            $this->printer->text(strtoupper($station) . " ORDER\n");
             $this->printer->selectPrintMode();
             $this->printer->text("Table: " . ($order->table->table_number ?? 'N/A') . "\n");
+            $this->printer->text("Order ID: " . $order->id . "\n");
             $this->printer->text("Time: " . now()->format('H:i') . "\n");
             $this->printer->text("--------------------------------\n");
 
-            $items = $newItemsOnly
-                ? $order->orderItems()->whereNull('admin_seen_at')->get()
-                : $order->orderItems;
+            $items = $order->orderItems()
+                ->whereHas('item.category', function($q) use ($station) {
+                    $q->where('station', $station);
+                });
+            
+            if ($newItemsOnly) {
+                $items->whereNull('admin_seen_at');
+            }
+
+            $items = $items->get();
 
             if ($items->isEmpty()) {
                 $this->printer->close();
@@ -152,9 +160,14 @@ class PrintService
 
             return true;
         } catch (Exception $e) {
-            Log::error("Kitchen printing failed: " . $e->getMessage());
+            Log::error($station . " printing failed: " . $e->getMessage());
             return false;
         }
+    }
+
+    public function printKitchenOrder(Order $order, $newItemsOnly = false)
+    {
+        return $this->printStationOrder($order, 'kitchen', $newItemsOnly);
     }
 
     protected function logToSimulation(Order $order, $type, $extras = null)

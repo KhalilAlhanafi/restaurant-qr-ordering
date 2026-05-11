@@ -20,6 +20,7 @@ class DashboardController extends Controller
             'active_orders' => Order::whereIn('status', ['pending', 'preparing', 'ready'])->count(),
             'today_reservations' => Reservation::whereDate('start_time', today())->count(),
             'total_revenue' => Order::whereDate('created_at', today())->sum('total_amount'),
+            'avg_rating' => \App\Models\Rating::avg('food_rating') ?: 0,
         ];
 
         $recentOrders = Order::with(['table', 'orderItems.item'])

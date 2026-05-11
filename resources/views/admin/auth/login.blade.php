@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Admin Login - Restaurant QR Ordering</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -99,17 +100,17 @@
                 
                 <!-- Username Field -->
                 <div>
-                    <label for="username" class="block text-sm font-medium text-gray-300 mb-2">
-                        Username
+                    <label for="email" class="block text-sm font-medium text-gray-300 mb-2">
+                        Email
                     </label>
                     <input 
-                        type="text" 
-                        id="username" 
-                        name="username" 
+                        type="email" 
+                        id="email" 
+                        name="email" 
                         required
                         class="input-field w-full px-4 py-3 rounded-lg text-white placeholder-gray-500"
-                        placeholder="Enter your username"
-                        autocomplete="username"
+                        placeholder="Enter your email"
+                        autocomplete="email"
                     >
                 </div>
 
@@ -195,10 +196,10 @@
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            if (!username || !password) {
+            if (!email || !password) {
                 showMessage('Please fill in all fields');
                 return;
             }
@@ -207,17 +208,17 @@
             messageContainer.classList.add('hidden');
 
             try {
+                const formData = new FormData(loginForm);
+                formData.set('email', email);
+                formData.set('password', password);
+
                 const response = await fetch('{{ route("admin.login.post") }}', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
                         'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}'
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
                     },
-                    body: JSON.stringify({
-                        username: username,
-                        password: password
-                    })
+                    body: formData
                 });
 
                 const data = await response.json();
@@ -238,11 +239,6 @@
             }
         });
 
-        // Add CSRF meta tag for JavaScript
-        const meta = document.createElement('meta');
-        meta.name = 'csrf-token';
-        meta.content = '{{ csrf_token() }}';
-        document.head.appendChild(meta);
     </script>
 </body>
 </html>

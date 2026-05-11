@@ -720,6 +720,96 @@
         [dir="rtl"] .actions-bar {
             flex-direction: row-reverse;
         }
+
+        /* ── Rating System ────────────────────────────────── */
+        .rating-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            animation: fadeUp 0.6s 0.4s ease both;
+        }
+
+        .rating-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            margin-bottom: 24px;
+            color: var(--white);
+        }
+
+        .rating-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        [dir="rtl"] .rating-group {
+            text-align: right;
+        }
+
+        .rating-group-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .stars {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-start;
+        }
+
+        [dir="rtl"] .stars {
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+
+        .star {
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--surface2);
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .star.active {
+            color: var(--gold);
+            text-shadow: 0 0 12px rgba(201, 168, 76, 0.4);
+        }
+
+        .comment-area {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            color: var(--white);
+            font-family: inherit;
+            font-size: 14px;
+            margin-top: 20px;
+            resize: none;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .comment-area:focus {
+            border-color: var(--gold);
+        }
+
+        .rating-success {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .rating-success-icon {
+            font-size: 40px;
+            color: var(--green);
+            margin-bottom: 12px;
+        }
     </style>
 </head>
 
@@ -848,18 +938,27 @@
 
             <ul class="items-list" id="order-items-list">
                 @foreach ($order->orderItems as $oi)
-                    <li class="item-row" data-item-id="{{ $oi->id }}">
-                        <div class="item-row-info">
-                            <span class="qty-chip">{{ $oi->quantity }}</span>
-                            <span class="item-name">{{ $oi->item->name }}</span>
+                    <li class="item-row" data-item-id="{{ $oi->id }}"
+                        style="flex-direction: column; align-items: stretch;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; width: 100%;">
+                            <div class="item-row-info">
+                                <span class="qty-chip">{{ $oi->quantity }}</span>
+                                <span class="item-name">{{ $oi->item->name }}</span>
+                            </div>
+                            <span class="item-price-tag">
+                                @if ($oi->item->show_price)
+                                    ${{ number_format($oi->unit_price * $oi->quantity, 2) }}
+                                @else
+                                    —
+                                @endif
+                            </span>
                         </div>
-                        <span class="item-price-tag">
-                            @if ($oi->item->show_price)
-                                ${{ number_format($oi->unit_price * $oi->quantity, 2) }}
-                            @else
-                                —
-                            @endif
-                        </span>
+                        @if ($oi->special_instructions)
+                            <div
+                                style="font-size: 11px; color: var(--gold); font-style: italic; margin-top: 4px; padding-left: 40px;">
+                                Note: {{ $oi->special_instructions }}
+                            </div>
+                        @endif
                     </li>
                 @endforeach
             </ul>
@@ -910,6 +1009,54 @@
                 </div>
             </div>
         </div>
+
+        @if (!$order->rating)
+            <!-- ── Rating Card ──────────────────────────────── -->
+            <div class="rating-card" id="rating-card">
+                <div id="rating-form-content">
+                    <h2 class="rating-title">{{ __('menu.rate_experience') }}</h2>
+
+                    <div class="rating-group">
+                        <span class="rating-group-label">{{ __('menu.how_was_food') }}</span>
+                        <div class="stars" data-group="food">
+                            @for ($i = 1; $i <= 5; $i++)
+                                <span class="star" data-value="{{ $i }}">★</span>
+                            @endfor
+                        </div>
+                    </div>
+
+                    <div class="rating-group">
+                        <span class="rating-group-label">{{ __('menu.how_was_service') }}</span>
+                        <div class="stars" data-group="service">
+                            @for ($i = 1; $i <= 5; $i++)
+                                <span class="star" data-value="{{ $i }}">★</span>
+                            @endfor
+                        </div>
+                    </div>
+
+                    <div class="rating-group">
+                        <span class="rating-group-label">{{ __('menu.how_was_ambiance') }}</span>
+                        <div class="stars" data-group="ambiance">
+                            @for ($i = 1; $i <= 5; $i++)
+                                <span class="star" data-value="{{ $i }}">★</span>
+                            @endfor
+                        </div>
+                    </div>
+
+                    <textarea class="comment-area" id="rating-comment" rows="3" placeholder="{{ __('menu.leave_comment') }}"></textarea>
+
+                    <button type="button" class="btn btn-gold" id="submit-rating"
+                        style="margin-top: 24px; width: 100%;">
+                        {{ __('menu.submit_rating') }}
+                    </button>
+                </div>
+
+                <div class="rating-success" id="rating-success-msg">
+                    <div class="rating-success-icon">✓</div>
+                    <h3>{{ __('menu.rating_submitted') }}</h3>
+                </div>
+            </div>
+        @endif
     </div>
 
     <!-- ═══════════════════════════════════════════════════════ -->
@@ -1054,11 +1201,14 @@
                     li.className = 'item-row new-item';
                     li.dataset.itemId = item.id;
                     li.innerHTML = `
-                        <div class="item-row-info">
-                            <span class="qty-chip">${item.quantity}</span>
-                            <span class="item-name">${item.name}</span>
+                        <div style="display: flex; justify-content: space-between; align-items: start; width: 100%;">
+                            <div class="item-row-info">
+                                <span class="qty-chip">${item.quantity}</span>
+                                <span class="item-name">${item.name}</span>
+                            </div>
+                            <span class="item-price-tag">${item.unit_price ? '$' + (item.unit_price * item.quantity).toFixed(2) : '—'}</span>
                         </div>
-                        <span class="item-price-tag">${item.unit_price ? '$' + (item.unit_price * item.quantity).toFixed(2) : '—'}</span>
+                        ${item.special_instructions ? `<div style="font-size: 11px; color: var(--gold); font-style: italic; margin-top: 4px; padding-left: 40px;">Note: ${item.special_instructions}</div>` : ''}
                     `;
                     list.appendChild(li);
                     setTimeout(() => li.classList.remove('new-item'), 3500);
@@ -1115,6 +1265,112 @@
         @if (!$order->is_checked_out)
             document.addEventListener('DOMContentLoaded', () => {
                 setInterval(checkStatus, 2000);
+            });
+        @endif
+
+        /* ── Rating logic ─────────────────────────────────── */
+        @if (!$order->rating)
+            document.addEventListener('DOMContentLoaded', () => {
+                const ratings = {
+                    food: 0,
+                    service: 0,
+                    ambiance: 0
+                };
+
+                // Star click handling
+                document.querySelectorAll('.star').forEach(star => {
+                    star.addEventListener('click', () => {
+                        const group = star.parentElement.dataset.group;
+                        const value = parseInt(star.dataset.value);
+                        ratings[group] = value;
+
+                        // Update UI
+                        const groupStars = star.parentElement.querySelectorAll('.star');
+                        groupStars.forEach(s => {
+                            if (parseInt(s.dataset.value) <= value) {
+                                s.classList.add('active');
+                            } else {
+                                s.classList.remove('active');
+                            }
+                        });
+                    });
+                });
+
+                // Submit handling
+                const submitBtn = document.getElementById('submit-rating');
+                if (submitBtn) {
+                    submitBtn.addEventListener('click', async () => {
+                        if (ratings.food === 0 || ratings.service === 0 || ratings.ambiance === 0) {
+                            alert('Please provide a rating for all categories.');
+                            return;
+                        }
+
+                        submitBtn.disabled = true;
+                        submitBtn.textContent = '...';
+
+                        try {
+                            console.log('Submitting rating to:', '{{ route('order.rate') }}');
+                            console.log('Rating data:', {
+                                order_id: {{ $order->id }},
+                                food_rating: ratings.food,
+                                service_rating: ratings.service,
+                                ambiance_rating: ratings.ambiance,
+                                comment: document.getElementById('rating-comment').value
+                            });
+
+                            const res = await fetch('{{ route('order.rate') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector(
+                                        'meta[name="csrf-token"]').content
+                                },
+                                body: JSON.stringify({
+                                    order_id: {{ $order->id }},
+                                    food_rating: ratings.food,
+                                    service_rating: ratings.service,
+                                    ambiance_rating: ratings.ambiance,
+                                    comment: document.getElementById('rating-comment')
+                                        .value
+                                })
+                            });
+
+                            console.log('Response status:', res.status);
+                            console.log('Response headers:', res.headers);
+
+                            const responseText = await res.text();
+                            console.log('Response text:', responseText);
+
+                            let data;
+                            try {
+                                data = JSON.parse(responseText);
+                            } catch (parseErr) {
+                                console.error('Invalid JSON response:', responseText);
+                                alert('Server error: ' + res.status + ' - ' + responseText.substring(0,
+                                    200));
+                                submitBtn.disabled = false;
+                                submitBtn.textContent = '{{ __('menu.submit_rating') }}';
+                                return;
+                            }
+
+                            console.log('Parsed data:', data);
+
+                            if (data.success) {
+                                document.getElementById('rating-form-content').style.display = 'none';
+                                document.getElementById('rating-success-msg').style.display = 'block';
+                            } else {
+                                alert(data.message || 'Error submitting rating');
+                                submitBtn.disabled = false;
+                                submitBtn.textContent = '{{ __('menu.submit_rating') }}';
+                            }
+                        } catch (e) {
+                            console.error('Fetch error:', e);
+                            alert('Network error: ' + e.message);
+                            submitBtn.disabled = false;
+                            submitBtn.textContent = '{{ __('menu.submit_rating') }}';
+                        }
+                    });
+                }
             });
         @endif
     </script>

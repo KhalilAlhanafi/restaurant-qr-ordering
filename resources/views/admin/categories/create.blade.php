@@ -44,6 +44,20 @@
             </div>
 
             <div class="mb-8">
+                <label for="station" class="block text-sm font-medium text-gray-400 mb-2">Station <span class="text-amber-500">*</span></label>
+                <select name="station" id="station" required
+                    class="w-full px-4 py-3 bg-[#0f0f0f] border border-gray-700 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 transition-all appearance-none">
+                    <option value="kitchen" {{ old('station') == 'kitchen' ? 'selected' : '' }}>Kitchen</option>
+                    <option value="bar" {{ old('station') == 'bar' ? 'selected' : '' }}>Bar</option>
+                    <option value="shisha" {{ old('station') == 'shisha' ? 'selected' : '' }}>Shisha</option>
+                    <option value="cash" {{ old('station') == 'cash' ? 'selected' : '' }}>Cash</option>
+                </select>
+                @error('station')
+                    <p class="text-red-400 text-sm mt-2">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div class="mb-8">
                 <label class="flex items-center cursor-pointer">
                     <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}
                         class="w-5 h-5 rounded border-gray-700 bg-[#0f0f0f] text-amber-500 focus:ring-amber-500/50 focus:ring-1">

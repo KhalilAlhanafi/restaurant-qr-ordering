@@ -8,7 +8,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\RestaurantTable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -25,13 +27,13 @@ class OrderController extends Controller
     {
         $since = $request->query('since', 0);
         $lastUpdate = $request->query('last_update', '1970-01-01');
-        
+
         // Get all active orders - include everything that's not completed/cancelled
         $orders = Order::with(['table', 'orderItems.item'])
             ->whereNotIn('status', ['completed', 'cancelled'])
-            ->where(function($query) use ($since, $lastUpdate) {
+            ->where(function ($query) use ($since, $lastUpdate) {
                 $query->where('id', '>', $since)
-                      ->orWhere('updated_at', '>', $lastUpdate);
+                    ->orWhere('updated_at', '>', $lastUpdate);
             })
             ->orderBy('updated_at', 'desc')
             ->orderBy('created_at', 'desc')
@@ -80,7 +82,7 @@ class OrderController extends Controller
         if ($item->order_id !== $order->id) {
             return response()->json(['success' => false, 'error' => 'Item does not belong to this order'], 403);
         }
-        
+
         $order->markItemAsSeen($item->id);
         return response()->json(['success' => true]);
     }
@@ -88,7 +90,7 @@ class OrderController extends Controller
     public function getOrderData(Order $order)
     {
         $order->load(['table', 'orderItems.item']);
-        
+
         return response()->json([
             'id' => $order->id,
             'status' => $order->status,
@@ -99,7 +101,7 @@ class OrderController extends Controller
             'has_unseen_updates' => $order->hasUnseenUpdates(),
             'unseen_items_count' => $order->unseenItemsCount(),
             'updated_at' => $order->updated_at->toISOString(),
-            'items' => $order->orderItems->map(function($oi) {
+            'items' => $order->orderItems->map(function ($oi) {
                 return [
                     'id' => $oi->id,
                     'name' => $oi->item->name,
@@ -123,8 +125,8 @@ class OrderController extends Controller
         $previousStatus = $order->status;
         $order->update($validated);
 
-        // Broadcast status update event
-        broadcast(new OrderStatusUpdated($order, $previousStatus));
+        // Broadcast status update event (disabled for now)
+        // broadcast(new OrderStatusUpdated($order, $previousStatus));
 
         // Update table status if order is completed or cancelled
         if (in_array($validated['status'], ['completed', 'cancelled'])) {
@@ -137,10 +139,10 @@ class OrderController extends Controller
     public function addItems(Order $order)
     {
         $order->load(['table', 'orderItems.item']);
-        $categories = \App\Models\ItemCategory::with(['items' => function($query) {
+        $categories = \App\Models\ItemCategory::with(['items' => function ($query) {
             $query->where('is_available', true);
         }])->where('is_active', true)->get();
-        
+
         return view('admin.orders.add-items', compact('order', 'categories'));
     }
 
@@ -165,7 +167,7 @@ class OrderController extends Controller
 
             // Check if item already exists in order using the loaded relation
             $existingItem = $order->orderItems->firstWhere('item_id', $item->id);
-            
+
             if ($existingItem) {
                 // Update existing item quantity
                 $existingItem->quantity += $quantity;
@@ -189,7 +191,11 @@ class OrderController extends Controller
         $order->save();
 
         // Broadcast order update event (as items were added)
-        broadcast(new OrderPlaced($order, false));
+        try {
+            broadcast(new OrderPlaced($order, false));
+        } catch (\Exception $e) {
+            Log::warning('Broadcasting OrderPlaced failed: ' . $e->getMessage());
+        }
 
         return redirect()->route('admin.orders.show', $order)
             ->with('success', 'Items added to order successfully');
@@ -198,18 +204,25 @@ class OrderController extends Controller
     public function endService(Order $order)
     {
         $previousStatus = $order->status;
-        
+
         // Mark order as completed
         $order->update(['status' => 'completed', 'completed_at' => now()]);
-        
+
         // Broadcast status update event
-        broadcast(new OrderStatusUpdated($order, $previousStatus));
-        
-        // Set table back to available
-        if ($order->table) {
-            $order->table->update(['status' => 'available']);
+        try {
+            broadcast(new OrderStatusUpdated($order, $previousStatus));
+        } catch (\Exception $e) {
+            Log::warning('Broadcasting OrderStatusUpdated failed: ' . $e->getMessage());
         }
-        
+
+        // Set table back to available
+        if ($order->table_id) {
+            $table = RestaurantTable::find($order->table_id);
+            if ($table) {
+                $table->update(['status' => 'available']);
+            }
+        }
+
         return response()->json(['success' => true, 'message' => 'Service ended successfully']);
     }
 }

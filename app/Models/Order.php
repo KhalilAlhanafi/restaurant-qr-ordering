@@ -40,6 +40,11 @@ class Order extends Model
             ->withTimestamps();
     }
 
+    public function rating(): HasOne
+    {
+        return $this->hasOne(Rating::class);
+    }
+
     public function hasUnseenUpdates(): bool
     {
         return $this->unseenItemsCount() > 0;

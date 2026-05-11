@@ -110,6 +110,22 @@
 
                 <!-- Actions -->
                 <div class="flex items-center gap-2 mt-4 pt-4 border-t border-gray-800">
+                    <form action="{{ route('admin.items.toggle-availability', $item) }}" method="POST" class="shrink-0">
+                        @csrf
+                        <button type="submit"
+                            class="inline-flex items-center justify-center w-10 h-10 {{ $item->is_available ? 'bg-green-500/10 hover:bg-green-500/20 text-green-400 hover:text-green-300' : 'bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300' }} rounded-lg transition-all duration-200"
+                            title="{{ $item->is_available ? 'Mark as unavailable' : 'Mark as available' }}">
+                            @if($item->is_available)
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            @else
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            @endif
+                        </button>
+                    </form>
                     <a href="{{ route('admin.items.edit', $item) }}"
                         class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-[#252525] hover:bg-[#303030] text-gray-300 hover:text-white text-sm font-medium rounded-lg transition-all duration-200">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

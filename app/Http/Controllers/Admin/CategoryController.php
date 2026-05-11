@@ -27,7 +27,8 @@ class CategoryController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'sort_order' => 'integer|min:0',
-            'is_active' => 'boolean',
+            'is_active' => 'sometimes|boolean',
+            'station' => 'required|string|in:kitchen,bar,shisha,cash',
         ]);
 
         ItemCategory::create($validated);
@@ -51,7 +52,8 @@ class CategoryController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'sort_order' => 'integer|min:0',
-            'is_active' => 'boolean',
+            'is_active' => 'sometimes|boolean',
+            'station' => 'required|string|in:kitchen,bar,shisha,cash',
         ]);
 
         $category->update($validated);

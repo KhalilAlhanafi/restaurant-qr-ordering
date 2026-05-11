@@ -23,22 +23,33 @@ class CartController extends Controller
     {
         $validated = $request->validate([
             'item_id' => 'required|exists:items,id',
-            'quantity' => 'required|integer|min:1'
+            'quantity' => 'required|integer|min:1',
+            'note' => 'nullable|string|max:255'
         ]);
 
         $item = Item::findOrFail($validated['item_id']);
         
-        $cart = session('cart', []);
+        // Check if item is available
+        if (!$item->is_available) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This item is currently unavailable'
+            ], 400);
+        }
         
-        // Check if item already exists in cart
+        $note = $validated['note'] ?? '';
+
+        $cart = session('cart', []);
+
+        // Check if item with the SAME note already exists in cart
         $existingIndex = null;
         foreach ($cart as $index => $cartItem) {
-            if ($cartItem['id'] == $validated['item_id']) {
+            if ($cartItem['id'] == $validated['item_id'] && ($cartItem['note'] ?? '') === $note) {
                 $existingIndex = $index;
                 break;
             }
         }
-        
+
         if ($existingIndex !== null) {
             // Update existing item quantity
             $cart[$existingIndex]['quantity'] += $validated['quantity'];
@@ -49,12 +60,13 @@ class CartController extends Controller
                 'name' => $item->name,
                 'price' => $item->price,
                 'show_price' => $item->show_price,
-                'quantity' => $validated['quantity']
+                'quantity' => $validated['quantity'],
+                'note' => $note
             ];
         }
-        
+
         session(['cart' => $cart]);
-        
+
         return response()->json([
             'success' => true,
             'cart' => $cart,
@@ -68,28 +80,32 @@ class CartController extends Controller
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'item_id' => 'required|exists:items,id',
-            'quantity' => 'required|integer|min:0'
+            'index' => 'required|integer|min:0',
+            'quantity' => 'nullable|integer|min:0',
+            'note' => 'nullable|string|max:255'
         ]);
 
         $cart = session('cart', []);
-        
-        foreach ($cart as $index => $cartItem) {
-            if ($cartItem['id'] == $validated['item_id']) {
+
+        if (isset($cart[$validated['index']])) {
+            if (isset($request->quantity)) {
                 if ($validated['quantity'] == 0) {
                     // Remove item if quantity is 0
-                    unset($cart[$index]);
+                    unset($cart[$validated['index']]);
                     $cart = array_values($cart); // Re-index array
                 } else {
                     // Update quantity
-                    $cart[$index]['quantity'] = $validated['quantity'];
+                    $cart[$validated['index']]['quantity'] = $validated['quantity'];
                 }
-                break;
+            }
+
+            if (isset($request->note)) {
+                $cart[$validated['index']]['note'] = $validated['note'];
             }
         }
-        
+
         session(['cart' => $cart]);
-        
+
         return response()->json([
             'success' => true,
             'cart' => $cart,
@@ -103,18 +119,18 @@ class CartController extends Controller
     public function remove(Request $request)
     {
         $validated = $request->validate([
-            'item_id' => 'required|exists:items,id'
+            'index' => 'required|integer|min:0'
         ]);
 
         $cart = session('cart', []);
-        
-        $cart = array_filter($cart, function($item) use ($validated) {
-            return $item['id'] != $validated['item_id'];
-        });
-        
-        $cart = array_values($cart); // Re-index array
+
+        if (isset($cart[$validated['index']])) {
+            unset($cart[$validated['index']]);
+            $cart = array_values($cart); // Re-index array
+        }
+
         session(['cart' => $cart]);
-        
+
         return response()->json([
             'success' => true,
             'cart' => $cart,
@@ -128,7 +144,7 @@ class CartController extends Controller
     public function clear()
     {
         session(['cart' => []]);
-        
+
         return response()->json([
             'success' => true,
             'cart' => [],
@@ -142,17 +158,17 @@ class CartController extends Controller
     public function summary()
     {
         $cart = session('cart', []);
-        
+
         $totalItems = 0;
         $totalPrice = 0;
-        
+
         foreach ($cart as $item) {
             $totalItems += $item['quantity'];
             if ($item['show_price']) {
                 $totalPrice += $item['price'] * $item['quantity'];
             }
         }
-        
+
         return response()->json([
             'total_items' => $totalItems,
             'total_price' => $totalPrice,

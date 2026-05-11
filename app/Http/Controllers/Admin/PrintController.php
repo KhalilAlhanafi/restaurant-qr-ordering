@@ -43,4 +43,18 @@ class PrintController extends Controller
             'message' => 'Failed to print kitchen order. Check printer connection or logs.'
         ], 500);
     }
+
+    public function printStation(Order $order, $station)
+    {
+        $success = $this->printService->printStationOrder($order, $station);
+
+        if ($success) {
+            return response()->json(['success' => true, 'message' => ucfirst($station) . ' ticket sent to printer']);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to print ' . $station . ' ticket. Check printer connection or logs.'
+        ], 500);
+    }
 }

@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'identify.table' => \App\Http\Middleware\IdentifyTable::class,
             'set.locale' => \App\Http\Middleware\SetLocale::class,
             'admin.auth' => \App\Http\Middleware\AdminAuth::class,
+            'station.auth' => \App\Http\Middleware\StationAuth::class,
             'customer.restrict' => \App\Http\Middleware\CustomerRestriction::class,
         ]);
         

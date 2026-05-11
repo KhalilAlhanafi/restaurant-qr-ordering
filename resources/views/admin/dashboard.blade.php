@@ -265,40 +265,31 @@
             <div class="lg:col-span-1">
                 <div class="bg-[#1a1a1a] rounded-xl border border-white/5 p-6 h-full flex flex-col justify-between">
                     <div>
-                        <h2 class="text-xl font-serif text-white italic mb-6">Critic Sentiment</h2>
+                        <h2 class="text-xl font-serif text-white italic mb-6">Guest Sentiment</h2>
 
                         <div class="space-y-6">
                             <div>
                                 <div class="flex justify-between items-center mb-1">
-                                    <h4 class="text-white text-sm font-medium">Categories</h4>
+                                    <h4 class="text-white text-sm font-medium">Customer Rating</h4>
                                     <div class="flex text-amber-500 text-xs">
-                                        ★★★★★
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            <span>{{ $i <= round($stats['avg_rating']) ? '★' : '☆' }}</span>
+                                        @endfor
                                     </div>
                                 </div>
                                 <p class="text-gray-500 text-xs italic leading-relaxed">
-                                    "{{ $stats['categories'] }} categories currently active on the menu. A diverse
-                                    selection."
-                                </p>
-                            </div>
-                            <div>
-                                <div class="flex justify-between items-center mb-1">
-                                    <h4 class="text-white text-sm font-medium">Menu Items</h4>
-                                    <div class="flex text-amber-500 text-xs">
-                                        ★★★★☆
-                                    </div>
-                                </div>
-                                <p class="text-gray-500 text-xs italic leading-relaxed">
-                                    "{{ $stats['items'] }} exquisite dishes prepared for service tonight. The truffle
-                                    selection is particularly notable."
+                                    Overall guest satisfaction is currently at
+                                    <strong>{{ number_format($stats['avg_rating'], 1) }} / 5.0</strong>.
+                                    Review historical feedback to maintain high culinary standards.
                                 </p>
                             </div>
                         </div>
                     </div>
 
                     <div class="mt-8">
-                        <a href="{{ route('admin.items.index') }}"
+                        <a href="{{ route('admin.ratings.index') }}"
                             class="block w-full text-center py-3 border border-gray-700 rounded text-[10px] uppercase tracking-[0.2em] text-gray-400 hover:text-white hover:border-gray-500 transition-colors">
-                            View Full Press Kit
+                            View All Feedbacks
                         </a>
                         <div class="flex justify-end mt-4">
                             <button

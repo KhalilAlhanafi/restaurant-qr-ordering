@@ -9,6 +9,7 @@ use App\Models\OrderItem;
 use App\Models\RestaurantTable;
 use App\Models\Tax;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CheckoutController extends Controller
 {
@@ -47,6 +48,7 @@ class CheckoutController extends Controller
                 'items' => 'required|array|min:1',
                 'items.*.id' => 'required|exists:items,id',
                 'items.*.quantity' => 'required|integer|min:1',
+                'items.*.notes' => 'nullable|string|max:255',
                 'special_requests' => 'nullable|string|max:500',
             ]);
 
@@ -98,7 +100,7 @@ class CheckoutController extends Controller
                     $unitPrice = $item->show_price ? ($item->price ?? 0) : 0;
                     $quantity = $itemData['quantity'] ?? 1;
                     $subtotal = $unitPrice * $quantity;
-                    
+
                     OrderItem::create([
                         'order_id' => $existingOrder->id,
                         'item_id' => $itemData['id'],
@@ -116,11 +118,11 @@ class CheckoutController extends Controller
                 }
                 $existingOrder->estimated_minutes = max($existingOrder->estimated_minutes, $estimatedMinutes);
                 $existingOrder->save();
-                
+
                 // Recalculate taxes for existing order based on new subtotal
                 $newSubtotal = $existingOrder->orderItems->sum('subtotal');
                 $existingOrder->taxes()->detach();
-                
+
                 foreach ($taxes as $tax) {
                     $taxAmount = $tax->calculateTax($newSubtotal);
                     if ($taxAmount > 0) {
@@ -130,7 +132,7 @@ class CheckoutController extends Controller
                         $existingOrder->total_amount += $taxAmount;
                     }
                 }
-                
+
                 $existingOrder->save();
                 $existingOrder->touch(); // Force timestamp update for polling
 
@@ -152,7 +154,7 @@ class CheckoutController extends Controller
                     $unitPrice = $item->show_price ? ($item->price ?? 0) : 0;
                     $quantity = $itemData['quantity'] ?? 1;
                     $subtotal = $unitPrice * $quantity;
-                    
+
                     OrderItem::create([
                         'order_id' => $order->id,
                         'item_id' => $itemData['id'],
@@ -162,7 +164,7 @@ class CheckoutController extends Controller
                         'special_instructions' => $itemData['notes'] ?? null,
                     ]);
                 }
-                
+
                 // Attach taxes to new order
                 foreach ($taxDetails as $taxDetail) {
                     $order->taxes()->attach($taxDetail['tax_id'], [
@@ -174,6 +176,13 @@ class CheckoutController extends Controller
             // Clear cart from session
             session()->forget('cart');
 
+            // Trigger OrderPlaced event for real-time updates
+            try {
+                event(new OrderPlaced($order));
+            } catch (\Exception $e) {
+                Log::warning('Broadcasting OrderPlaced failed: ' . $e->getMessage());
+            }
+
             // Always return JSON since request comes from JavaScript fetch
             return response()->json([
                 'success' => true,
@@ -182,7 +191,7 @@ class CheckoutController extends Controller
                 'redirect' => route('order.confirmation', $order)
             ]);
         } catch (\Exception $e) {
-            \Log::error('Checkout error: ' . $e->getMessage());
+            Log::error('Checkout error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'error' => 'Server error: ' . $e->getMessage()
@@ -204,18 +213,23 @@ class CheckoutController extends Controller
         if ($order) {
             $order->update(['is_checked_out' => true]);
             $order->touch(); // Force update the timestamp to trigger polling
-            
+
             // Clear session data for new customer
             session()->forget(['table_id', 'table_number', 'qr_token', 'cart', 'locale']);
-            
+
             // Add flag to prevent admin access for this session
             session(['was_customer' => true]);
-            
+
             // Broadcast checkout event for admin notifications
-            if (class_exists('\App\Events\OrderStatusUpdated')) {
-                event(new \App\Events\OrderStatusUpdated($order, 'pending'));
+            try {
+                if (class_exists('\App\Events\OrderStatusUpdated')) {
+                    event(new \App\Events\OrderStatusUpdated($order, 'pending'));
+                }
+            } catch (\Exception $e) {
+                // Log the error but don't break the checkout process
+                Log::warning('Broadcasting failed: ' . $e->getMessage());
             }
-            
+
             return redirect()->route('order.confirmation', $order)
                 ->with('success', 'Order finalized! Thank you for dining with us.');
         }
@@ -228,16 +242,16 @@ class CheckoutController extends Controller
     {
         // For checked out orders, allow access without table session
         if ($order->is_checked_out) {
-            $order->load(['orderItems.item', 'table', 'taxes']);
+            $order->load(['orderItems.item', 'table', 'taxes', 'rating']);
             return view('menu.confirmation', compact('order'));
         }
-        
+
         // For active orders, verify the order belongs to the current table session
         if ($order->table_id != session('table_id')) {
             abort(403);
         }
 
-        $order->load(['orderItems.item', 'table', 'taxes']);
+        $order->load(['orderItems.item', 'table', 'taxes', 'rating']);
 
         return view('menu.confirmation', compact('order'));
     }
